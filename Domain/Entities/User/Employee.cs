@@ -4,9 +4,9 @@ namespace smERP.Domain.Entities.User;
 
 public class Employee : BaseUser
 {
-    public string? ManagerID { get; set; }
-    public int DepartmentID { get; set; }
-    public int BranchID { get; set; }
+    public string? ManagerId { get; set; }
+    public int DepartmentId { get; set; }
+    public int BranchId { get; set; }
     public int SalaryInCents { get; set; }
     public virtual Branch Branch { get; set; }
     public virtual Department Department { get; set; }

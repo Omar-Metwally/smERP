@@ -54,7 +54,7 @@ public class DBContext : IdentityDbContext<BaseUser>
         builder.Entity<Department>()
             .HasMany(e => e.DepartmentEmployees)
             .WithOne(e => e.Department)
-            .HasForeignKey(e => e.DepartmentID);
+            .HasForeignKey(e => e.DepartmentId);
 
         builder.Entity<Department>()
             .HasOne(e => e.DepartmentHead)
@@ -64,7 +64,7 @@ public class DBContext : IdentityDbContext<BaseUser>
         builder.Entity<Branch>()
             .HasMany(e => e.BranchEmployees)
             .WithOne(e => e.Branch)
-            .HasForeignKey(e => e.BranchID);
+            .HasForeignKey(e => e.BranchId);
 
         builder.Entity<Branch>()
             .HasOne(e => e.BranchManager)
