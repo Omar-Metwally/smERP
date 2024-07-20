@@ -22,10 +22,10 @@ public class DBContext : IdentityDbContext<BaseUser>
         builder.Entity<BaseUser>().UseTptMappingStrategy();
 
         builder.Entity<ProductAttribute>()
-            .HasKey(e => new { e.ProductSKUID, e.AttributeValueID });
+            .HasKey(e => new { e.ProductSkuId, e.AttributeValueId });
 
         builder.Entity<ProductSKU>()
-            .HasKey(e => e.ID);
+            .HasKey(e => e.Id);
 
         builder.Entity<ProductSKU>()
             .HasIndex(e => e.ProductSKUNumber)
@@ -34,22 +34,22 @@ public class DBContext : IdentityDbContext<BaseUser>
         builder.Entity<ProductSKU>()
             .HasMany(e => e.ProductAttributes)
             .WithOne(e => e.ProductSKU)
-            .HasForeignKey(e => e.ProductSKUID);
+            .HasForeignKey(e => e.ProductSkuId);
 
         builder.Entity<ProductSKU>()
             .HasOne(p => p.Product)
             .WithMany(p => p.ProductSKUs)
-            .HasForeignKey(p => p.ProductID)
+            .HasForeignKey(p => p.ProductId)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.Entity<ProductSKU>()
             .HasMany(e => e.ProductImages)
             .WithOne(e => e.ProductSKU)
-            .HasForeignKey(e => e.ProductSKUID)
+            .HasForeignKey(e => e.ProductSkuId)
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.Entity<ProductSKUImage>()
-        .HasKey(e => e.ID);
+        .HasKey(e => e.Id);
 
         builder.Entity<Department>()
             .HasMany(e => e.DepartmentEmployees)
@@ -59,7 +59,7 @@ public class DBContext : IdentityDbContext<BaseUser>
         builder.Entity<Department>()
             .HasOne(e => e.DepartmentHead)
             .WithMany()
-            .HasForeignKey(e => e.DepartmentHeadID);
+            .HasForeignKey(e => e.DepartmentHeadId);
 
         builder.Entity<Branch>()
             .HasMany(e => e.BranchEmployees)
@@ -69,18 +69,18 @@ public class DBContext : IdentityDbContext<BaseUser>
         builder.Entity<Branch>()
             .HasOne(e => e.BranchManager)
             .WithMany()
-            .HasForeignKey(e => e.BranchManagerID);
+            .HasForeignKey(e => e.BranchManagerId);
 
         builder.Entity<BaseTransaction>()
             .HasMany(e => e.TransactionPayments)
             .WithOne(e => e.ReferencingTransaction)
-            .HasForeignKey(e => e.ReferencingTransactionID);
+            .HasForeignKey(e => e.ReferencingTransactionId);
 
         builder.Entity<ProductSupplier>()
-            .HasKey(e => new { e.ProductID, e.SupplierID });
+            .HasKey(e => new { e.ProductId, e.SupplierId });
 
         builder.Entity<BaseTransaction>()
-            .HasKey(e => e.ID);
+            .HasKey(e => e.Id);
 
     }
     public DbSet<Product> Products { get; set; }

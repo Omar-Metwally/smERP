@@ -6,8 +6,8 @@ namespace smERP.Domain.Entities.Transactions;
 
 public class BaseTransaction : BaseEntity
 {
-    public string EmployeeID { get; set; }
-    public int BranchID { get; set; }
+    public string EmployeeId { get; set; }
+    public int BranchId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public bool IsCanceled { get; set; }

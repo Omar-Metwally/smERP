@@ -13,7 +13,7 @@ public class Repository<TEntity>(DBContext context) : IRepository<TEntity> where
 
     public async Task<TEntity> GetByID(int ID)
     {
-        return await _context.Set<TEntity>().FirstOrDefaultAsync(x => x.ID == ID);
+        return await _context.Set<TEntity>().FirstOrDefaultAsync(x => x.Id == ID);
     }
 
     public async Task<IEnumerable<TEntity>> GetAll()
@@ -64,14 +64,14 @@ public class Repository<TEntity>(DBContext context) : IRepository<TEntity> where
 
     public async Task Hide(int ID)
     {
-        var entityToBeHidden = await _context.Set<TEntity>().AsTracking().FirstOrDefaultAsync(x => x.ID == ID);
+        var entityToBeHidden = await _context.Set<TEntity>().AsTracking().FirstOrDefaultAsync(x => x.Id == ID);
         if (entityToBeHidden is not null)
             entityToBeHidden.IsHidden = true;
     }
 
     public async Task<bool> DoesExist(int ID)
     {
-        return await _context.Set<TEntity>().AnyAsync(x => x.ID == ID);
+        return await _context.Set<TEntity>().AnyAsync(x => x.Id == ID);
     }
 
     public async Task<bool> DoesExist(Expression<Func<TEntity, bool>> predicate)
@@ -86,7 +86,7 @@ public class Repository<TEntity>(DBContext context) : IRepository<TEntity> where
 
     public async Task<int> CountExisting(IEnumerable<int> IDs)
     {
-        return await _context.Set<TEntity>().CountAsync(x => IDs.Contains(x.ID));
+        return await _context.Set<TEntity>().CountAsync(x => IDs.Contains(x.Id));
     }
 }
 

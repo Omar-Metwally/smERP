@@ -4,9 +4,9 @@ namespace smERP.Domain.Entities.Transactions;
 
 public class PaymentTransaction : BaseTransaction
 {
-    public int? ReferencingTransactionID { get; set; }
-    public string? SupplierID { get; set; }
-    public string? CustomerID { get; set; }
+    public int? ReferencingTransactionId { get; set; }
+    public string? SupplierId { get; set; }
+    public string? CustomerId { get; set; }
     public virtual BaseTransaction ReferencingTransaction { get; set; }
     public virtual Supplier? Supplier { get; set; }
     public virtual Customer? Customer { get; set; }

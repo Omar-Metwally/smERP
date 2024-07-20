@@ -37,6 +37,6 @@ public class CompanyService : BaseResponseHandler, ICompanyService
         var companyCreated = await _unitOfWork.Repository.Add(MappingExtensions.ToCompany(request));
 
         await _unitOfWork.SaveChangesAsync();
-        return Success(companyCreated.ID, _localizer["Success"]);
+        return Success(companyCreated.Id, _localizer["Success"]);
     }
 }

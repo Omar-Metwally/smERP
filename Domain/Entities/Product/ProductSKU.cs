@@ -3,8 +3,8 @@
 public class ProductSKU : BaseEntity
 {
     public string ProductSKUNumber { get; set; }
-    public int ProductVariantID { get; set; }
-    public int ProductID { get; set; }
+    public int ProductVariantId { get; set; }
+    public int ProductId { get; set; }
     public int QuantityInStock { get; set; }
     public int Price { get; set; }
     public int? DiscountedPrice { get; set; }

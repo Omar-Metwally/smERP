@@ -10,7 +10,7 @@ public static class MappingExtensions
     {
         return company.Select(x => new GetCompanyRequest()
         {
-            ID = x.ID,
+            ID = x.Id,
             Name = x.Name,
             LogoImagePath = x.LogoImage,
             CoverImagePath = x.CoverImage,

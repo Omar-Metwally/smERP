@@ -2,8 +2,8 @@
 
 public class TransactionItem : BaseEntity
 {
-    public int TransactionID { get; set; }
-    public int ProductSKUID { get; set; }
+    public int TransactionId { get; set; }
+    public int ProductSkuId { get; set; }
     public int Quantity { get; set; }
     public int UsableQuantity { get; set; }
     public int PricePerUnitInCents { get; set; }

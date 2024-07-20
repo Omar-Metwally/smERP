@@ -6,11 +6,11 @@ namespace smERP.Domain.Entities.Transactions;
 
 public class ProductMoveTransaction : BaseTransaction
 {
-    public int FromStorageLocationID { get; set; }
-    public int ToStorageLocationID { get; set; }
+    public int FromStorageLocationId { get; set; }
+    public int ToStorageLocationId { get; set; }
     public int Quantity { get; set; }
-    public string FromEmployeeID { get; set; }
-    public string ToEmployeeID { get; set; }
+    public string FromEmployeeId { get; set; }
+    public string ToEmployeeId { get; set; }
     public virtual StorageLocation FromStorageLocation { get; set; }
     public virtual StorageLocation ToStorageLocation { get; set; }
     public virtual Employee FromEmployee { get; set; }
