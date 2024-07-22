@@ -82,6 +82,9 @@ public class DBContext : IdentityDbContext<BaseUser>
         builder.Entity<BaseTransaction>()
             .HasKey(e => e.Id);
 
+        builder.Entity<TransactionDocument>()
+            .HasKey(e => new {e.TransactionId, e.SensitiveDocumentId});
+
     }
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductSKU> ProductSKUs { get; set; }
@@ -97,6 +100,7 @@ public class DBContext : IdentityDbContext<BaseUser>
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Employee> Employees { get; set; }
 
+    public DbSet<BaseTransaction> BaseTransactions { get; set; }
     public DbSet<TransactionChange> TransactionChanges { get; set; }
     public DbSet<TransactionItem> TransactionItems { get; set; }
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
@@ -105,6 +109,10 @@ public class DBContext : IdentityDbContext<BaseUser>
     public DbSet<ProductMoveTransaction> ProductMoveTransactions { get; set; }
     public DbSet<Department> Departments { get; set; }
     public DbSet<Branch> Branches { get; set; }
+
+    public DbSet<TransactionDocument> TransactionDocuments { get; set; }
+    public DbSet<SensitiveDocument> SensitiveDocuments { get; set; }
+
 
 
 }

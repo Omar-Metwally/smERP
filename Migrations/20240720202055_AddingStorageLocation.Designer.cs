@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using smERP.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using smERP.Infrastructure.Data;
 namespace smERP.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20240720202055_AddingStorageLocation")]
+    partial class AddingStorageLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -471,7 +474,7 @@ namespace smERP.Migrations
                     b.ToTable("ProductSuppliers");
                 });
 
-            modelBuilder.Entity("smERP.Domain.Entities.Transactions.BaseTransaction", b =>
+            modelBuilder.Entity("smERP.Domain.Entities.Transactions.BaseTransactions", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -518,43 +521,6 @@ namespace smERP.Migrations
                     b.UseTptMappingStrategy();
                 });
 
-            modelBuilder.Entity("smERP.Domain.Entities.Transactions.SensitiveDocument", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("EncryptedContent")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsHidden")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("UploadDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UploadedById")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UploadedById");
-
-                    b.ToTable("SensitiveDocuments");
-                });
-
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.TransactionChange", b =>
                 {
                     b.Property<int>("TransactionChangeId")
@@ -593,21 +559,6 @@ namespace smERP.Migrations
                     b.HasIndex("BaseTransactionId");
 
                     b.ToTable("TransactionChanges");
-                });
-
-            modelBuilder.Entity("smERP.Domain.Entities.Transactions.TransactionDocument", b =>
-                {
-                    b.Property<int>("TransactionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SensitiveDocumentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("TransactionId", "SensitiveDocumentId");
-
-                    b.HasIndex("SensitiveDocumentId");
-
-                    b.ToTable("TransactionDocuments");
                 });
 
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.TransactionItem", b =>
@@ -736,7 +687,7 @@ namespace smERP.Migrations
 
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.BuyTransaction", b =>
                 {
-                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransaction");
+                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransactions");
 
                     b.Property<int>("BaseTransactionId")
                         .HasColumnType("int");
@@ -759,7 +710,7 @@ namespace smERP.Migrations
 
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.PaymentTransaction", b =>
                 {
-                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransaction");
+                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransactions");
 
                     b.Property<string>("CustomerId")
                         .HasColumnType("nvarchar(450)");
@@ -781,7 +732,7 @@ namespace smERP.Migrations
 
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.ProductMoveTransaction", b =>
                 {
-                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransaction");
+                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransactions");
 
                     b.Property<string>("FromEmployeeId")
                         .IsRequired()
@@ -813,7 +764,7 @@ namespace smERP.Migrations
 
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.SellTransaction", b =>
                 {
-                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransaction");
+                    b.HasBaseType("smERP.Domain.Entities.Transactions.BaseTransactions");
 
                     b.Property<int>("BaseTransactionId")
                         .HasColumnType("int");
@@ -1065,7 +1016,7 @@ namespace smERP.Migrations
                     b.Navigation("Supplier");
                 });
 
-            modelBuilder.Entity("smERP.Domain.Entities.Transactions.BaseTransaction", b =>
+            modelBuilder.Entity("smERP.Domain.Entities.Transactions.BaseTransactions", b =>
                 {
                     b.HasOne("smERP.Domain.Entities.Organization.Branch", "Branch")
                         .WithMany()
@@ -1084,20 +1035,9 @@ namespace smERP.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("smERP.Domain.Entities.Transactions.SensitiveDocument", b =>
-                {
-                    b.HasOne("smERP.Domain.Entities.User.Employee", "UploadedBy")
-                        .WithMany()
-                        .HasForeignKey("UploadedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UploadedBy");
-                });
-
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.TransactionChange", b =>
                 {
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", "BaseTransaction")
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", "BaseTransaction")
                         .WithMany("TransactionChanges")
                         .HasForeignKey("BaseTransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1106,28 +1046,9 @@ namespace smERP.Migrations
                     b.Navigation("BaseTransaction");
                 });
 
-            modelBuilder.Entity("smERP.Domain.Entities.Transactions.TransactionDocument", b =>
-                {
-                    b.HasOne("smERP.Domain.Entities.Transactions.SensitiveDocument", "SensitiveDocument")
-                        .WithMany()
-                        .HasForeignKey("SensitiveDocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", "Transaction")
-                        .WithMany("TransactionDocuments")
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SensitiveDocument");
-
-                    b.Navigation("Transaction");
-                });
-
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.TransactionItem", b =>
                 {
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", "BaseTransaction")
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", "BaseTransaction")
                         .WithMany("TransactionItems")
                         .HasForeignKey("BaseTransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1138,13 +1059,13 @@ namespace smERP.Migrations
 
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.BuyTransaction", b =>
                 {
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", "BaseTransaction")
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", "BaseTransaction")
                         .WithMany()
                         .HasForeignKey("BaseTransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", null)
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", null)
                         .WithOne()
                         .HasForeignKey("smERP.Domain.Entities.Transactions.BuyTransaction", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1175,13 +1096,13 @@ namespace smERP.Migrations
                         .WithMany()
                         .HasForeignKey("CustomerId");
 
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", null)
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", null)
                         .WithOne()
                         .HasForeignKey("smERP.Domain.Entities.Transactions.PaymentTransaction", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", "ReferencingTransaction")
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", "ReferencingTransaction")
                         .WithMany("TransactionPayments")
                         .HasForeignKey("ReferencingTransactionId");
 
@@ -1210,7 +1131,7 @@ namespace smERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", null)
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", null)
                         .WithOne()
                         .HasForeignKey("smERP.Domain.Entities.Transactions.ProductMoveTransaction", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1239,7 +1160,7 @@ namespace smERP.Migrations
 
             modelBuilder.Entity("smERP.Domain.Entities.Transactions.SellTransaction", b =>
                 {
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", "BaseTransaction")
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", "BaseTransaction")
                         .WithMany()
                         .HasForeignKey("BaseTransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1251,7 +1172,7 @@ namespace smERP.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransaction", null)
+                    b.HasOne("smERP.Domain.Entities.Transactions.BaseTransactions", null)
                         .WithOne()
                         .HasForeignKey("smERP.Domain.Entities.Transactions.SellTransaction", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1355,11 +1276,9 @@ namespace smERP.Migrations
                     b.Navigation("ProductImages");
                 });
 
-            modelBuilder.Entity("smERP.Domain.Entities.Transactions.BaseTransaction", b =>
+            modelBuilder.Entity("smERP.Domain.Entities.Transactions.BaseTransactions", b =>
                 {
                     b.Navigation("TransactionChanges");
-
-                    b.Navigation("TransactionDocuments");
 
                     b.Navigation("TransactionItems");
 

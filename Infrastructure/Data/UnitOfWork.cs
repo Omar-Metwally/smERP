@@ -1,4 +1,5 @@
-﻿using smERP.Application.Interfaces;
+﻿using smERP.Application.DTOs.Rquests.Image;
+using smERP.Application.Interfaces;
 using smERP.Application.Interfaces.Repositories;
 using smERP.Domain.Entities;
 using smERP.Infrastructure.Repositories;
@@ -9,6 +10,7 @@ public class UnitOfWork<T>(DBContext context) : IUnitOfWork<T> where T : BaseEnt
 {
     private readonly DBContext _context = context;
     public IRepository<T> Repository { get; } = new Repository<T>(context);
+    public IImageRepository<ImagePersistenceData> Images { get; } = new ImageRepository(context);
 
     public async Task<int> SaveChangesAsync()
     {

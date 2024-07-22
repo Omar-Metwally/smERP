@@ -16,6 +16,7 @@ public class BaseTransaction : BaseEntity
     public TransactionStatus TransactionStatus { get; set; }
     public virtual Branch Branch { get; set; }
     public virtual Employee Employee { get; set; }
+    public ICollection<TransactionDocument> TransactionDocuments { get; set; }
     public ICollection<PaymentTransaction> TransactionPayments { get; set; }
     public ICollection<TransactionChange> TransactionChanges { get; set; }
     public ICollection<TransactionItem> TransactionItems { get; set; }

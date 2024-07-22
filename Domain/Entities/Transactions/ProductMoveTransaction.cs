@@ -1,6 +1,5 @@
 ﻿using smERP.Domain.Entities.Organization;
 using smERP.Domain.Entities.User;
-using System.Security.Cryptography.X509Certificates;
 
 namespace smERP.Domain.Entities.Transactions;
 
