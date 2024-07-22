@@ -17,7 +17,6 @@ public class CompanyController(ICompanyService companyService, ILogger<CompanyCo
     [HttpPost]
     public async Task<IActionResult> CreateCompany(CreateCompanyRequest request)
     {
-        var g = CultureInfo.CurrentCulture;
         return CustomResult(await _companyService.CreateCompany(request));
     }
 }
