@@ -1,85 +1,78 @@
 ﻿using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Hosting;
 using smERP.Application.DTOs.Results;
 using smERP.Application.Interfaces.Services;
-using smERP.Application.Interfaces;
-using smERP.Domain.Entities.Organization;
 using smERP.Application.DTOs.Image;
 using smERP.Application.DTOs.Results.Image;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace smERP.Application.Services;
 
-public class ImageService : BaseResponseHandler, IImageService
+public class ImageServiceConfig
 {
-    private readonly IUnitOfWork<Company> _unitOfWork;
+    public int FullScreenWidth { get; set; } = 900;
+    public int ThumbnailWidth { get; set; } = 300;
+    public int JpegQuality { get; set; } = 90;
+}
+
+public class ImageService : IImageService
+{
     private readonly IStringLocalizer<ImageService> _localizer;
     private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly string _wwwRootPath;
-    private const int FullScreenWidth = 900;
-    private const int ThumbnailWidth = 300;
-    //private readonly IValidator<CreateCompanyRequest> _validator;
+    private readonly ImageServiceConfig _config;
+    private readonly ILogger<ImageService> _logger;
 
-    public ImageService(IWebHostEnvironment webHostEnvironment, IUnitOfWork<Company> unitOfWork, IStringLocalizer<ImageService> localizer, IStringLocalizer<BaseResponseHandler> baseLocalizer)
-        : base(baseLocalizer)
+    public ImageService(
+        IWebHostEnvironment webHostEnvironment,
+        IStringLocalizer<ImageService> localizer,
+        IOptions<ImageServiceConfig> config,
+        ILogger<ImageService> logger)
     {
-        _unitOfWork = unitOfWork;
         _localizer = localizer;
         _webHostEnvironment = webHostEnvironment;
-        _wwwRootPath = _webHostEnvironment.WebRootPath;
+        _wwwRootPath = _webHostEnvironment.ContentRootPath;
+        _config = config.Value;
+        _logger = logger;
     }
 
-    public async Task<ImageURLs?> ProcessImage(ImageProcessingInput image)
+    public async Task<ImageURLs?> ProcessImage(ImageProcessingInput image, CancellationToken cancellationToken = default)
     {
-        var tasks = new List<Task>();
-
-        var imageResult = await Image.LoadAsync(image.Content);
-
-        MemoryStream processedFullScreenImage;
-        MemoryStream processedThumbnailImage;
-
-        string thumbnailImageURL = "";
-        string fullScreenImageURL = "";
+        if (image == null || image.Content == null || image.Content.Length == 0)
+        {
+            return null;
+        }
 
         try
         {
-            tasks.Add(Task.Run(async () =>
-            {
-                //var storagePath = Path.Combine(Directory.GetCurrentDirectory(), $"{image.Path}");
+            using var imageResult = await Image.LoadAsync(image.Content, cancellationToken);
 
+            var fullScreenImage = await ProcessImage(imageResult, _config.FullScreenWidth, cancellationToken);
+            var thumbnailImage = await ProcessImage(imageResult, _config.ThumbnailWidth, cancellationToken);
 
-                //if (!Directory.Exists(storagePath))
-                //{
-                //    Directory.CreateDirectory(storagePath);
-                //}
+            var fullScreenImageURL = await SaveImage(fullScreenImage, image.Path, $"FullScreen_{image.FileName}", cancellationToken);
+            var thumbnailImageURL = await SaveImage(thumbnailImage, image.Path, $"Thumbnail_{image.FileName}", cancellationToken);
 
-                processedFullScreenImage = await SavingImage(imageResult, $"FullScreen_{image.FileName}", image.Path, FullScreenWidth);
-                processedThumbnailImage = await SavingImage(imageResult, $"Thumbnail_{image.FileName}", image.Path, ThumbnailWidth);
-
-                fullScreenImageURL = await UploadFiles(processedFullScreenImage, image.Path, $"FullScreen_{image.FileName}");
-                thumbnailImageURL = await UploadFiles(processedThumbnailImage, image.Path, $"Thumbnail_{image.FileName}");
-            }));
-
-            await Task.WhenAll(tasks);
-
-            return new ImageURLs()
+            return new ImageURLs
             {
                 Fullscreen = fullScreenImageURL,
                 Thumbnail = thumbnailImageURL
             };
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Error processing image {FileName}", image.FileName);
             return null;
         }
-
-
     }
 
-    private static async Task<MemoryStream> SavingImage(Image image, string name, string path, int resizeWidth)
+    private static async Task<MemoryStream> ProcessImage(Image image, int resizeWidth, CancellationToken cancellationToken)
     {
-
         var width = image.Width;
         var height = image.Height;
 
@@ -88,89 +81,49 @@ public class ImageService : BaseResponseHandler, IImageService
             height = (int)((double)resizeWidth / width * height);
             width = resizeWidth;
         }
-        image.Mutate(x => x.Resize(width, height));
+
+        var clone = image.Clone(x => x.Resize(width, height));
 
         var memoryStream = new MemoryStream();
-
-        //if (File.Exists($"{path}/{name}.jpg"))
-        //{
-        //    File.Delete($"{path}/{name}.jpg");
-        //}
-
-        //await image.SaveAsJpegAsync($"{path}/{name}.jpg", new JpegEncoder
-        //{
-        //    Quality = 90,
-        //    SkipMetadata = true
-        //});
-
-        await image.SaveAsJpegAsync(memoryStream, new JpegEncoder
+        await clone.SaveAsJpegAsync(memoryStream, new JpegEncoder
         {
             Quality = 90,
             SkipMetadata = true
-        });
+        }, cancellationToken);
 
+        memoryStream.Position = 0;
         return memoryStream;
-        //return await UploadFiles(memoryStream, path, name);
-
-
     }
 
-    public async Task<string> UploadFiles(MemoryStream stream, string path, string name)
+    private async Task<string> SaveImage(MemoryStream imageStream, string path, string name, CancellationToken cancellationToken)
     {
-        stream.Position = 0;
+        var sanitizedName = SanitizeFileName(name);
         var uploadPath = Path.Combine(_wwwRootPath, path);
         Directory.CreateDirectory(uploadPath);
 
-        var fileName = $"{name}.jpg";
+        var fileName = $"{sanitizedName}.jpg";
         var filePath = Path.Combine(uploadPath, fileName);
 
         try
         {
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
-                await stream.CopyToAsync(fileStream);
+                await imageStream.CopyToAsync(fileStream, cancellationToken);
             }
 
-            // Return a relative URL path that can be used in your application
             return Path.Combine("/", path, fileName).Replace("\\", "/");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving file: {ex.Message}");
-            return "";
+            _logger.LogError(ex, "Error saving image {FileName}", fileName);
+            throw new IOException(_localizer["ErrorSavingImage", fileName], ex);
         }
     }
 
-    //public async Task<string> UploadFiles(MemoryStream stream, string path, string name)
-    //{
-    //    stream.Position = 0;
-    //    //using var stream = new MemoryStream();
-    //    //await file.CopyToAsync(stream);
-    //    var auth = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyBd16d14vL8hTQR3ufgrCkvyfghfghfgeBwjnN3koY"));
-    //    var a = await auth.SignInWithEmailAndPasswordAsync("gdfgdfg.1fdgfghfdfhdget@gmfgafdfgdfghgdfgdfghidfgl.com", "12345fghfgx6zZsdf!");
-    //    var cancellation = new CancellationTokenSource();
-
-    //    var task = new FirebaseStorage(
-    //        "fir-e4e25.appspot.com",
-    //        new FirebaseStorageOptions
-    //        {
-    //            AuthTokenAsyncFactory = () => Task.FromResult(a.FirebaseToken),
-    //            ThrowOnCancel = true
-    //        })
-    //        .Child(path)
-    //        .Child(name + ".jpg")
-    //        .PutAsync(stream, cancellation.Token);
-
-    //    task.Progress.ProgressChanged += (s, e) => Console.WriteLine($"Progress: {e.Percentage} %");
-    //    try
-    //    {
-    //        var downloadUrl = await task;
-    //        Console.WriteLine($"Download link:\n{downloadUrl}");
-    //        return downloadUrl;
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return "";
-    //    }
-    //}
+    private static string SanitizeFileName(string fileName)
+    {
+        string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
+        string invalidReplace = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
+        return Regex.Replace(fileName, invalidReplace, "_");
+    }
 }

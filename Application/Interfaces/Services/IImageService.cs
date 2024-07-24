@@ -5,5 +5,5 @@ namespace smERP.Application.Interfaces.Services;
 
 public interface IImageService
 {
-    Task<ImageURLs?> ProcessImage(ImageProcessingInput image);
+    Task<ImageURLs?> ProcessImage(ImageProcessingInput image, CancellationToken cancellationToken = default);
 }

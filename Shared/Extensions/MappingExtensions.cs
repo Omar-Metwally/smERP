@@ -1,4 +1,5 @@
-﻿using smERP.Application.DTOs.Rquests.Company;
+﻿using smERP.Application.DTOs.Results.Image;
+using smERP.Application.DTOs.Rquests.Company;
 using smERP.Domain.Entities.Organization;
 
 namespace smERP.Shared.Extensions;
@@ -12,15 +13,19 @@ public static class MappingExtensions
         {
             ID = x.Id,
             Name = x.Name,
-            LogoImagePath = x.LogoImage,
-            CoverImagePath = x.CoverImage,
+            LogoImagePath = x.FullscreenLogoImage?? "",
+            CoverImagePath = x.FullscreenCoverImage?? "",
         });
     }
-    public static Company ToCompany(CreateCompanyRequest companydto)
+    public static Company ToCompany(string name, ImageURLs coverImage, ImageURLs logoImage)
     {
         return new Company()
         {
-            Name = companydto.Name,
+            Name = name,
+            FullscreenCoverImage = coverImage.Fullscreen,
+            ThumbnailCoverImage = coverImage.Thumbnail,
+            FullscreenLogoImage = logoImage.Fullscreen,
+            ThumbnailLogoImage = logoImage.Thumbnail
         };
     }
 }

@@ -29,6 +29,9 @@ builder.Services.AddIdentity<BaseUser, IdentityRole>(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddSingleton(builder.Environment);
+
+
 builder.Services.AddDbContext<DBContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection"));
@@ -94,6 +97,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+
+builder.Services.AddScoped<IImageService, ImageService>();
 
 builder.Services.AddScoped<IValidator<CreateCompanyRequest>, CreateCompanyRequestValidator>();
 
