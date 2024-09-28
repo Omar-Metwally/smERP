@@ -63,7 +63,7 @@ It's a free real estate
 
 ## Contact
 
-feel free to contact my any time by email at xomar.metwallyx@gmail.com
+feel free to contact me any time by email at xomar.metwallyx@gmail.com
 ---
 
 This project is actively under development. Stay tuned for updates and new features!
