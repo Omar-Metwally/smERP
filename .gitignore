@@ -361,4 +361,27 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/Images/Meal
+/smERP.Persistence/Migrations/20240927230406_AddingSuppliers.Designer.cs
+/smERP.Persistence/Migrations/20240927230406_AddingSuppliers.cs
+/smERP.Persistence/Migrations/20240920184955_DatabaseReform.cs
+/smERP.Persistence/Migrations/20240920184955_DatabaseReform.Designer.cs
+/smERP.Persistence/Migrations/20240923044033_DatabaseReform1.cs
+/smERP.Persistence/Migrations/20240923044033_DatabaseReform1.Designer.cs
+/smERP.Persistence/Migrations/20240923054337_DatabaseReform2.cs
+/smERP.Persistence/Migrations/20240923054337_DatabaseReform2.Designer.cs
+/smERP.Persistence/Migrations/20240925020438_AddingChangeLog.cs
+/smERP.Persistence/Migrations/20240925020438_AddingChangeLog.Designer.cs
+/smERP.Persistence/Migrations/20240925021136_AddingChangeLog1.cs
+/smERP.Persistence/Migrations/20240925021136_AddingChangeLog1.Designer.cs
+/smERP.Persistence/Migrations/20240925021830_AddingChangeLog2.cs
+/smERP.Persistence/Migrations/20240925021830_AddingChangeLog2.Designer.cs
+/smERP.Persistence/Migrations/20240925031638_AddingIsLeafToCategory.cs
+/smERP.Persistence/Migrations/20240925031638_AddingIsLeafToCategory.Designer.cs
+/smERP.Persistence/Migrations/20240925122639_AddingCreatedAtAndUpdatedAtToEntity1.cs
+/smERP.Persistence/Migrations/20240925122639_AddingCreatedAtAndUpdatedAtToEntity1.Designer.cs
+/smERP.Persistence/Migrations/20240926005658_EditingAttributeValuePK.cs
+/smERP.Persistence/Migrations/20240926005658_EditingAttributeValuePK.Designer.cs
+/smERP.Persistence/Migrations/20240927084823_AddingProductInstanceAttributeValues.cs
+/smERP.Persistence/Migrations/20240927084823_AddingProductInstanceAttributeValues.Designer.cs
+/smERP.Persistence/Migrations/20240927121654_AddingSkuIndexToProductInstance.cs
+/smERP.Persistence/Migrations/20240927121654_AddingSkuIndexToProductInstance.Designer.cs
