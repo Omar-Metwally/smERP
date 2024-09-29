@@ -28,5 +28,9 @@ public class AddProductCommandValidator : AbstractValidator<AddProductCommandMod
         RuleFor(command => command.CategoryId)
             .GreaterThan(0)
             .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Category.Localize()));
+
+        RuleFor(command => command.ShelfLifeInDays)
+            .GreaterThan(0)
+            .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.ShelfLife.Localize()));
     }
 }

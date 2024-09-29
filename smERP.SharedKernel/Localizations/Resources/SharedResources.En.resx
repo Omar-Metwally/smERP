@@ -358,4 +358,16 @@
   <data name="PaymentMethod" xml:space="preserve">
     <value>Payment Method</value>
   </data>
+  <data name="ShelfLife" xml:space="preserve">
+    <value>Shelf Life</value>
+  </data>
+  <data name="StorageLocation" xml:space="preserve">
+    <value>Storage Location</value>
+  </data>
+  <data name="SerialNumber" xml:space="preserve">
+    <value>SerialNumber</value>
+  </data>
+  <data name="EnteredExpirationDateCannotExceedProductShelfLife" xml:space="preserve">
+    <value>Entered Expiration Date Cannot Exceed Product Default Shelf Life</value>
+  </data>
 </root>

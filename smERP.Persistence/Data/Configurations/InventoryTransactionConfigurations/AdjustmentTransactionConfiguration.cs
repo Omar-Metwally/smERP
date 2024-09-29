@@ -10,7 +10,7 @@ public class AdjustmentTransactionConfiguration : IEntityTypeConfiguration<Adjus
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.TransactionDate).HasDefaultValue(DateTime.UtcNow);
+        builder.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
 
         builder.OwnsMany(x => x.Items, w =>
         {

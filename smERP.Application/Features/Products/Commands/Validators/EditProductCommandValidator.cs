@@ -32,5 +32,9 @@ public class EditProductCommandValidator : AbstractValidator<EditProductCommandM
         RuleFor(command => command.CategoryId)
             .GreaterThan(0)
             .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Category.Localize()));
+
+        RuleFor(command => command.ShelfLifeInDays)
+            .GreaterThan(0)
+            .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.ShelfLife.Localize()));
     }
 }

@@ -13,6 +13,7 @@ using smERP.Persistence.Data.Interceptors;
 using Attribute = smERP.Domain.Entities.Product.Attribute;
 using smERP.Domain.Entities.ExternalEntities;
 using smERP.Domain.Entities.InventoryTransaction;
+using smERP.Domain.Entities.Organization;
 
 namespace smERP.Persistence.Data;
 
@@ -40,6 +41,10 @@ public class ProductDbContext(DbContextOptions<ProductDbContext> options) : DbCo
     public virtual DbSet<ProductInstance> ProductInstances { get; set; }
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
+
+    public virtual DbSet<StorageLocation> StorageLocations { get; set; }
+
+    public virtual DbSet<Branch> Branches { get; set; }
 
     public virtual DbSet<ProcurementTransaction> ProcurementTransactions { get; set; }
 

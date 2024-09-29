@@ -354,4 +354,16 @@
   <data name="PaymentMethod" xml:space="preserve">
     <value>طريقة الدفع</value>
   </data>
+  <data name="ShelfLife" xml:space="preserve">
+    <value>عمر المنتج</value>
+  </data>
+  <data name="StorageLocation" xml:space="preserve">
+    <value>مكان تخزين</value>
+  </data>
+  <data name="SerialNumber" xml:space="preserve">
+    <value>رقم التسلسلي</value>
+  </data>
+  <data name="EnteredExpirationDateCannotExceedProductShelfLife" xml:space="preserve">
+    <value>تاريخ الصلاحية المدخل لا يمكن ان يتعدي تاريخ الصلاحية الخاص بالمنتج</value>
+  </data>
 </root>

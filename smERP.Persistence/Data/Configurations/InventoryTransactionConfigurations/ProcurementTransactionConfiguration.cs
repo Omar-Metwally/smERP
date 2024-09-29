@@ -8,13 +8,11 @@ public class ProcurementTransactionConfiguration : IEntityTypeConfiguration<Proc
 {
     public void Configure(EntityTypeBuilder<ProcurementTransaction> builder)
     {
-        builder.Ignore(x => x.ExternalEntityId);
-
         builder.HasKey(x => x.Id);
 
         builder.HasOne(x => x.Supplier).WithMany().HasForeignKey(x => x.SupplierId);
 
-        builder.Property(x => x.TransactionDate).HasDefaultValue(DateTime.UtcNow);
+        builder.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
 
         builder.OwnsMany(x => x.Items, w =>
         {
@@ -26,7 +24,7 @@ public class ProcurementTransactionConfiguration : IEntityTypeConfiguration<Proc
         {
             w.WithOwner().HasForeignKey(x => x.TransactionId);
             w.HasKey(x => new { x.TransactionId, x.Id });
-            w.Property(x => x.PaymentDate).HasDefaultValue(DateTime.UtcNow);
+            w.Property(x => x.PaymentDate).HasDefaultValueSql("GETUTCDATE()");
         });
     }
 }

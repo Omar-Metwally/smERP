@@ -13,17 +13,17 @@ public class AddProductInstanceCommandValidator : AbstractValidator<AddProductIn
             .GreaterThan(0)
             .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Product.Localize()));
 
-        RuleFor(command => command.BuyingPrice)
-            .Must(MustBePositiveIfNotNull)
-            .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.BuyingPrice.Localize()));
+        //RuleFor(command => command.BuyingPrice)
+        //    .Must(MustBePositiveIfNotNull)
+        //    .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.BuyingPrice.Localize()));
 
         RuleFor(command => command.SellingPrice)
             .Must(MustBePositiveIfNotNull)
             .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.SellingPrice.Localize()));
 
-        RuleFor(command => command.QuantityInStock)
-            .Must(MustBePositiveIfNotNull)
-            .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()));
+        //RuleFor(command => command.QuantityInStock)
+        //    .Must(MustBePositiveIfNotNull)
+        //    .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()));
 
         RuleFor(command => command.ProductInstanceAttributeValues)
             .NotEmpty()

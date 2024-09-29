@@ -8,11 +8,9 @@ public class SalesTransactionConfiguration : IEntityTypeConfiguration<SalesTrans
 {
     public void Configure(EntityTypeBuilder<SalesTransaction> builder)
     {
-        builder.Ignore(x => x.ExternalEntityId);
-
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.TransactionDate).HasDefaultValue(DateTime.UtcNow);
+        builder.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
 
         builder.OwnsMany(x => x.Items, w =>
         {
@@ -24,7 +22,7 @@ public class SalesTransactionConfiguration : IEntityTypeConfiguration<SalesTrans
         {
             w.WithOwner().HasForeignKey(x => x.TransactionId);
             w.HasKey(x => new { x.TransactionId, x.Id });
-            w.Property(x => x.PaymentDate).HasDefaultValue(DateTime.UtcNow);
+            w.Property(x => x.PaymentDate).HasDefaultValueSql("GETUTCDATE()");
         });
     }
 }

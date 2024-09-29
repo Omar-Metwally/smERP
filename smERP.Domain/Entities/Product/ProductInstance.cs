@@ -56,30 +56,30 @@ public class ProductInstance : Entity, IAggregateRoot
             .WithMessage(SharedResourcesKeys.Created.Localize());
     }
 
-    public IResult<ProductInstance> UpdateQuantity(int newQuantity)
-    {
-        if (newQuantity < 0)
-            return new Result<ProductInstance>().WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()))
-                .WithStatusCode(HttpStatusCode.BadRequest);
+    //public IResult<ProductInstance> UpdateQuantity(int newQuantity)
+    //{
+    //    if (newQuantity < 0)
+    //        return new Result<ProductInstance>().WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()))
+    //            .WithStatusCode(HttpStatusCode.BadRequest);
 
-        QuantityInStock = newQuantity;
-        return new Result<ProductInstance>(this)
-            .WithStatusCode(HttpStatusCode.NoContent)
-            .WithMessage(SharedResourcesKeys.UpdatedSuccess.Localize());
-    }
+    //    QuantityInStock = newQuantity;
+    //    return new Result<ProductInstance>(this)
+    //        .WithStatusCode(HttpStatusCode.NoContent)
+    //        .WithMessage(SharedResourcesKeys.UpdatedSuccess.Localize());
+    //}
 
-    public IResult<ProductInstance> UpdateBuyingPrice(decimal buyingPrice)
-    {
-        if (buyingPrice < 0)
-            return new Result<ProductInstance>()
-                .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.BuyingPrice.Localize()))
-                .WithStatusCode(HttpStatusCode.BadRequest);
+    //public IResult<ProductInstance> UpdateBuyingPrice(decimal buyingPrice)
+    //{
+    //    if (buyingPrice < 0)
+    //        return new Result<ProductInstance>()
+    //            .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.BuyingPrice.Localize()))
+    //            .WithStatusCode(HttpStatusCode.BadRequest);
 
-        BuyingPrice = buyingPrice;
-        return new Result<ProductInstance>(this)
-            .WithStatusCode(HttpStatusCode.NoContent)
-            .WithMessage(SharedResourcesKeys.UpdatedSuccess.Localize());
-    }
+    //    BuyingPrice = buyingPrice;
+    //    return new Result<ProductInstance>(this)
+    //        .WithStatusCode(HttpStatusCode.NoContent)
+    //        .WithMessage(SharedResourcesKeys.UpdatedSuccess.Localize());
+    //}
 
     public IResult<ProductInstance> UpdateSellingPrice(decimal sellingPrice)
     {

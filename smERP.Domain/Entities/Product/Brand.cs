@@ -30,26 +30,4 @@ public class Brand : Entity, IAggregateRoot
             .WithStatusCode(HttpStatusCode.Created)
             .WithMessage(SharedResourcesKeys.Created.Localize());
     }
-
-    public IResult<Brand> UpdateName(string englishName, string arabicName)
-    { 
-        var nameResult = BilingualName.Create(englishName, arabicName);
-        if (nameResult.IsFailed)
-            return nameResult.ChangeType(new Brand());
-
-        Name = nameResult.Value;
-        return new Result<Brand>(this)
-            .WithStatusCode(HttpStatusCode.OK)
-            .WithMessage(SharedResourcesKeys.UpdatedSuccess.Localize());
-    }
-
-    public void Hide()
-    {
-        IsHidden = true;
-    }
-
-    public void Show()
-    {
-        IsHidden = false;
-    }
 }

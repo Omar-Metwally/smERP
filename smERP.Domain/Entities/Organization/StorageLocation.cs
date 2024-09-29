@@ -1,9 +1,47 @@
-﻿namespace smERP.Domain.Entities.Organization;
+﻿using smERP.Domain.Entities.Product;
+using smERP.SharedKernel.Localizations.Extensions;
+using smERP.SharedKernel.Localizations.Resources;
+using smERP.SharedKernel.Responses;
 
-public class StorageLocation
+namespace smERP.Domain.Entities.Organization;
+
+public class StorageLocation : Entity, IAggregateRoot
 {
-    public int Id { get; set; }
-    public int BranchId { get; set; }
-    public string Name { get; set; }
-    public virtual Branch Branch { get; set; }
+    public int BranchId { get; private set; }
+    public string Name { get; private set; } = null!;
+    public virtual Branch Branch { get; private set; } = null!;
+    public ICollection<StoredProductInstance> StoredProductInstances { get; private set; } = new List<StoredProductInstance>;
+
+    private StorageLocation() { }
+
+    internal StorageLocation(int branchId, string name)
+    {
+        Name = name;
+    }
+
+    public IResult<List<StoredProductInstance>> AddStoredProductInstances(List<(int ProductInstnceId, int Quantity, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, DateOnly? ExprationDate)> Items)> products)
+    {
+        if (products == null || products.Count() < 0)
+            return new Result<List<StoredProductInstance>>()
+                .WithError(SharedResourcesKeys.___ListMustContainAtleastOneItem.Localize(SharedResourcesKeys.Product.Localize()));
+
+        foreach (var product in products)
+        {
+            var existingStoredProduct = StoredProductInstances.FirstOrDefault(x => x.ProductInstanceId == product.ProductInstnceId);
+            if (existingStoredProduct != null)
+            {
+               var existingStoredProductUpdateResult = existingStoredProduct.Update(product.Quantity, product.ShelfLifeInDays, product.Items);
+                if (existingStoredProductUpdateResult.IsFailed)
+                    return existingStoredProductUpdateResult.ChangeType(new List<StoredProductInstance>());
+            }
+
+            var storedProductCreateResult = StoredProductInstance.Create(Id, product);
+            if (storedProductCreateResult.IsFailed)
+                return storedProductCreateResult.ChangeType(new List<StoredProductInstance>());
+
+            StoredProductInstances.Add(storedProductCreateResult.Value);
+        }
+
+        return new Result<List<StoredProductInstance>>(StoredProductInstances.ToList());
+    }
 }

@@ -13,6 +13,11 @@ public class Product : Entity, IAggregateRoot
     public BilingualName Name { get; private set; } = null!;
     public string? Description { get; private set; }
     public string ModelNumber { get; private set; } = null!;
+    public int? ShelfLifeInDays { get; private set; }
+    public int? WarrantyInDays { get; private set; }
+    public bool DoesExpire => ShelfLifeInDays.HasValue;
+    public bool IsWarranted => WarrantyInDays.HasValue;
+    public bool AreItemsTracked => DoesExpire || IsWarranted;
     public int BrandId { get; private set; }
     public int CategoryId { get; private set; }
     public virtual Brand Brand { get; private set; } = null!;
@@ -20,18 +25,19 @@ public class Product : Entity, IAggregateRoot
     public virtual ICollection<ProductInstance> ProductInstances { get; private set; } = new List<ProductInstance>();
     public virtual ICollection<ProductSupplier> ProductSuppliers { get; private set; } = new List<ProductSupplier>();
 
-    private Product(BilingualName name, string modelNumber, int brandId, int categoryId, string? description = null)
+    private Product(BilingualName name, string modelNumber, int brandId, int categoryId, string? description = null, int? shelfLifeInDays = null)
     {
         Name = name;
         ModelNumber = modelNumber;
         BrandId = brandId;
         CategoryId = categoryId;
         Description = description;
+        ShelfLifeInDays = shelfLifeInDays;
     }
 
     private Product() { }
 
-    public static IResult<Product> Create(string englishName, string arabicName, string modelNumber, int brandId, int categoryId, string? description = null)
+    public static IResult<Product> Create(string englishName, string arabicName, string modelNumber, int brandId, int categoryId, string? description = null, int? shelfLifeInDays = null)
     {
 
         var nameResult = BilingualName.Create(englishName, arabicName);
@@ -48,7 +54,7 @@ public class Product : Entity, IAggregateRoot
             return result;
         }
 
-        return new Result<Product>(new Product(nameResult.Value, modelNumber, brandId, categoryId, description))
+        return new Result<Product>(new Product(nameResult.Value, modelNumber, brandId, categoryId, description, shelfLifeInDays))
             .WithStatusCode(HttpStatusCode.Created)
             .WithMessage(SharedResourcesKeys.Created.Localize());
     }
@@ -71,6 +77,11 @@ public class Product : Entity, IAggregateRoot
     public void UpdateBrand(int brandId)
     {
         BrandId = brandId;
+    }
+
+    public void UpdateShelfLife(int shelfLife)
+    {
+        ShelfLifeInDays = shelfLife;
     }
 
     //public IResult<Product> UpdateDetails(string englishName, string arabicName, string modelNumber, string? description)
@@ -98,7 +109,7 @@ public class Product : Entity, IAggregateRoot
     //        .WithMessage(SharedResourcesKeys.UpdatedSuccess.Localize());
     //}
 
-    public IResult<ProductInstance> AddProductInstance(int quantity, decimal buyingPrice, decimal sellingPrice, List<(int attributeId, int attributeValueId)> attributeValuesIds)
+    public IResult<ProductInstance> AddProductInstance(decimal sellingPrice, List<(int attributeId, int attributeValueId)> attributeValuesIds)
     {
         if (!IsAttributeValuesIdsListUnique(attributeValuesIds))
             return new Result<ProductInstance>()
@@ -111,7 +122,7 @@ public class Product : Entity, IAggregateRoot
                 .WithError(SharedResourcesKeys.ProductInstanceDuplicate.Localize())
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        var productInstanceResult = ProductInstance.Create(Id, quantity, buyingPrice, sellingPrice, attributeValuesIds);
+        var productInstanceResult = ProductInstance.Create(Id, 0, 0, sellingPrice, attributeValuesIds);
         if (productInstanceResult.IsFailed)
             return productInstanceResult;
 

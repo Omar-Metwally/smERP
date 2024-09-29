@@ -51,7 +51,7 @@ public class ProductCommandHandler(
             return new Result<Product>()
                 .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.ModelNumber.Localize()));
 
-        var productToBeCreatedResult = Product.Create(request.EnglishName, request.ArabicName, request.ModelNumber, request.BrandId, request.CategoryId, request.Description);
+        var productToBeCreatedResult = Product.Create(request.EnglishName, request.ArabicName, request.ModelNumber, request.BrandId, request.CategoryId, request.Description, request.ShelfLifeInDays);
         if (productToBeCreatedResult.IsFailed)
             return productToBeCreatedResult;
 
@@ -106,6 +106,11 @@ public class ProductCommandHandler(
             productToBeEdited.UpdateModelNumber(request.ModelNumber);
         }
 
+        if (!string.IsNullOrWhiteSpace(request.Description))
+        {
+            productToBeEdited.UpdateDescription(request.Description);
+        }
+
         if (request.BrandId.HasValue && request.BrandId.Value > 0)
         {
             var doesBrandExist = await _brandRepository.DoesExist(x => x.Id == request.BrandId);
@@ -127,7 +132,12 @@ public class ProductCommandHandler(
                 return new Result<Product>()
                     .WithBadRequest(SharedResourcesKeys.CategoryMustBeLeaf.Localize());
 
-            productToBeEdited.UpdateBrand(request.CategoryId.Value);
+            productToBeEdited.UpdateCategory(request.CategoryId.Value);
+        }
+
+        if (request.ShelfLifeInDays.HasValue && request.ShelfLifeInDays.Value > 0)
+        {
+            productToBeEdited.UpdateShelfLife(request.ShelfLifeInDays.Value);
         }
 
         _productRepository.Update(productToBeEdited);

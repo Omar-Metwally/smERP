@@ -18,6 +18,7 @@
         public const string ___ListMustContainAtleastOneItem = "___ListMustContainAtleastOneItem";
         public const string ___ListCannotContainDuplicates = "___ListCannotContainDuplicates";
         public const string SomeItemsIn___ListAreNotCorrect = "SomeItemsIn___ListAreNotCorrect";
+        public const string EnteredExpirationDateCannotExceedProductShelfLife = "EnteredExpirationDateCannotExceedProductShelfLife";
         public const string NotEmpty = "NotEmpty";
         public const string NotData = "NotData";
 
@@ -65,6 +66,9 @@
         public const string Street = "Street";
         public const string Address = "Address";
         public const string Supplier = "Supplier";
+        public const string ShelfLife = "ShelfLife";
+        public const string StorageLocation = "StorageLocation";
+        public const string SerialNumber = "SerialNumber";
 
         public const string AttributeList = "AttributeList";
         public const string Price = "Price";

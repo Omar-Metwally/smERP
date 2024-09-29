@@ -31,7 +31,7 @@ public class ProductInstanceCommandHandler(IProductRepository productRepository,
             return new Result<ProductInstance>()
                 .WithBadRequest(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.AttributeList.Localize()));
 
-        var productInstanceToBeCreatedResult = product.AddProductInstance(request.QuantityInStock ?? 0, request.BuyingPrice ?? 0, request.SellingPrice ?? 0, attributeValuesList);
+        var productInstanceToBeCreatedResult = product.AddProductInstance(request.SellingPrice ?? 0, attributeValuesList);
         if (productInstanceToBeCreatedResult.IsFailed)
             return productInstanceToBeCreatedResult;
 
@@ -58,19 +58,19 @@ public class ProductInstanceCommandHandler(IProductRepository productRepository,
 
         IResult<ProductInstance> productInstanceToBeEditedResult = new Result<ProductInstance>(productInstanceToBeEdited);
 
-        if (request.QuantityInStock != null && request.QuantityInStock.HasValue && request.QuantityInStock > -1)
-        {
-            productInstanceToBeEditedResult = productInstanceToBeEdited.UpdateQuantity(request.QuantityInStock.Value);
-            if (productInstanceToBeEditedResult.IsFailed)
-                return productInstanceToBeEditedResult;
-        }
+        //if (request.QuantityInStock != null && request.QuantityInStock.HasValue && request.QuantityInStock > -1)
+        //{
+        //    productInstanceToBeEditedResult = productInstanceToBeEdited.UpdateQuantity(request.QuantityInStock.Value);
+        //    if (productInstanceToBeEditedResult.IsFailed)
+        //        return productInstanceToBeEditedResult;
+        //}
 
-        if (request.BuyingPrice != null && request.BuyingPrice.HasValue && request.BuyingPrice > -1)
-        {
-            productInstanceToBeEditedResult = productInstanceToBeEdited.UpdateBuyingPrice(request.BuyingPrice.Value);
-            if (productInstanceToBeEditedResult.IsFailed)
-                return productInstanceToBeEditedResult;
-        }
+        //if (request.BuyingPrice != null && request.BuyingPrice.HasValue && request.BuyingPrice > -1)
+        //{
+        //    productInstanceToBeEditedResult = productInstanceToBeEdited.UpdateBuyingPrice(request.BuyingPrice.Value);
+        //    if (productInstanceToBeEditedResult.IsFailed)
+        //        return productInstanceToBeEditedResult;
+        //}
 
         if (request.SellingPrice != null && request.SellingPrice.HasValue && request.SellingPrice > -1)
         {
