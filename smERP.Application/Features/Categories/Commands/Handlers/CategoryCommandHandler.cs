@@ -77,7 +77,7 @@ public class CategoryCommandHandler(ICategoryRepository categoryRepository, IUni
 
         if (!string.IsNullOrWhiteSpace(request.EnglishName))
         {
-            var doesEnglishNameExist = await _categoryRepository.DoesExist(x => x.Name.English == request.EnglishName);
+            var doesEnglishNameExist = await _categoryRepository.DoesExist(x => x.Name.English == request.EnglishName && x.Id != request.CategoryId);
             if (doesEnglishNameExist)
                 return new Result<Category>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameEn.Localize()));
@@ -87,7 +87,7 @@ public class CategoryCommandHandler(ICategoryRepository categoryRepository, IUni
 
         if (!string.IsNullOrWhiteSpace(request.ArabicName))
         {
-            var doesArabicNameExist = await _categoryRepository.DoesExist(x => x.Name.Arabic == request.ArabicName);
+            var doesArabicNameExist = await _categoryRepository.DoesExist(x => x.Name.Arabic == request.ArabicName && x.Id != request.CategoryId);
             if (doesArabicNameExist)
                 return new Result<Category>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameAr.Localize()));

@@ -67,9 +67,12 @@
         public const string Supplier = "Supplier";
 
         public const string AttributeList = "AttributeList";
+        public const string Price = "Price";
         public const string SellingPrice = "SellingPrice";
         public const string BuyingPrice = "BuyingPrice";
         public const string Quantity = "Quantity";
+        public const string PayedAmount = "PayedAmount";
+        public const string PaymentMethod = "PaymentMethod";
 
         public const string CompanyName = "CompanyName";
         public const string CategoryName = "CategoryName";

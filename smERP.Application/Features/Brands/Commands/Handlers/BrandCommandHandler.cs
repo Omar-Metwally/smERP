@@ -56,7 +56,7 @@ public class BrandCommandHandler (IBrandRepository brandRepository, IUnitOfWork 
 
         if (!string.IsNullOrWhiteSpace(request.EnglishName))
         {
-            var doesEnglishNameExist = await _brandRepository.DoesExist(x => x.Name.English == request.EnglishName);
+            var doesEnglishNameExist = await _brandRepository.DoesExist(x => x.Name.English == request.EnglishName && x.Id != request.BrandId);
             if (doesEnglishNameExist)
                 return new Result<Brand>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameEn.Localize()));
@@ -66,7 +66,7 @@ public class BrandCommandHandler (IBrandRepository brandRepository, IUnitOfWork 
 
         if (!string.IsNullOrWhiteSpace(request.ArabicName))
         {
-            var doesArabicNameExist = await _brandRepository.DoesExist(x => x.Name.Arabic == request.ArabicName);
+            var doesArabicNameExist = await _brandRepository.DoesExist(x => x.Name.Arabic == request.ArabicName && x.Id != request.BrandId);
             if (doesArabicNameExist)
                 return new Result<Brand>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameAr.Localize()));

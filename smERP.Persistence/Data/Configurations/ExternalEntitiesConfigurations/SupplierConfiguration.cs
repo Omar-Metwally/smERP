@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using smERP.Domain.Entities.ExternalEntities;
-using smERP.Domain.ValueObjects;
 
 namespace smERP.Persistence.Data.Configurations.ExternalEntitiesConfigurations;
 
@@ -22,6 +21,7 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
         builder.OwnsMany(p => p.Addresses, address =>
         {
             address.WithOwner();
+            address.HasKey(x => x.Id);
             address.ToTable("SupplierAddresses");
             address.Property(n => n.Country).IsRequired();
             address.Property(n => n.State).IsRequired();

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using smERP.Domain.Entities;
 using Newtonsoft.Json;
 
-namespace smERP.Persistence.Data.Configurations;
+namespace smERP.Persistence.Data.Interceptors;
 
 public class ChangeLogInterceptor : SaveChangesInterceptor
 {
@@ -40,7 +40,7 @@ public class ChangeLogInterceptor : SaveChangesInterceptor
 
         foreach (var entry in context.ChangeTracker.Entries())
         {
-            if ((entry.Entity is Entity entity) && (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.State == EntityState.Deleted))
+            if (entry.Entity is Entity entity && (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.State == EntityState.Deleted))
             {
                 string changes = null;
                 if (entry.State != EntityState.Deleted)
@@ -57,7 +57,7 @@ public class ChangeLogInterceptor : SaveChangesInterceptor
                     EntityId = entity.Id,
                     EntityName = entity.GetType().Name,
                     Action = entry.State.ToString(),
-                    Changes = changes??"Null",
+                    Changes = changes ?? "Null",
                     Timestamp = DateTime.UtcNow,
                     UserId = userId
                 };

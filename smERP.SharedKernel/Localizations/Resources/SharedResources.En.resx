@@ -349,4 +349,13 @@
   <data name="Supplier" xml:space="preserve">
     <value>Supplier</value>
   </data>
+  <data name="Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="PayedAmount" xml:space="preserve">
+    <value>Payed Amount</value>
+  </data>
+  <data name="PaymentMethod" xml:space="preserve">
+    <value>Payment Method</value>
+  </data>
 </root>

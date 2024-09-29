@@ -123,7 +123,7 @@ public class AttributeCommandHandler(IAttributeRepository attributeRepository, I
         if (attributeValueToBeAddedResult.IsFailed)
             return attributeValueToBeAddedResult;
 
-        return attributeValueToBeAddedResult.WithCreated();
+        return attributeValueToBeAddedResult.ChangeType(attributeValueToBeAddedResult.Value.Id).WithCreated();
     }
 
     public async Task<IResultBase> Handle(EditAttributeValueCommandModel request, CancellationToken cancellationToken)

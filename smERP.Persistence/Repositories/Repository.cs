@@ -13,7 +13,7 @@ public class Repository<TEntity>(DbContext context) : IRepository<TEntity> where
 
     public virtual async Task<TEntity> GetByID(int ID)
     {
-        return await _context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == ID);
+        return await _context.Set<TEntity>().AsTracking().FirstOrDefaultAsync(x => x.Id == ID);
     }
 
     public async Task<IEnumerable<TEntity>> GetAll()

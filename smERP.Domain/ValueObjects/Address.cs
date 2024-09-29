@@ -7,6 +7,7 @@ namespace smERP.Domain.ValueObjects;
 
 public class Address : ValueObject
 {
+    public int Id { get; private set; }
     public string Street { get; private set; } = null!;
     public string City { get; private set; } = null!;
     public string State { get; private set; } = null!;

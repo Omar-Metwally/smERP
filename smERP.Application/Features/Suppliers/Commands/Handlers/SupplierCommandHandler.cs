@@ -56,7 +56,7 @@ public class SupplierCommandHandler(ISupplierRepository supplierRepository, IUni
 
         if (!string.IsNullOrEmpty(request.EnglishName))
         {
-            var doesEnglishNameExist = await _supplierRepository.DoesExist(x => x.Name.English == request.EnglishName);
+            var doesEnglishNameExist = await _supplierRepository.DoesExist(x => x.Name.English == request.EnglishName && x.Id != request.SupplierId);
             if (doesEnglishNameExist)
                 return new Result<Supplier>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameEn.Localize()));
@@ -68,7 +68,7 @@ public class SupplierCommandHandler(ISupplierRepository supplierRepository, IUni
 
         if (!string.IsNullOrEmpty(request.ArabicName))
         {
-            var doesArabicNameExist = await _supplierRepository.DoesExist(x => x.Name.Arabic == request.ArabicName);
+            var doesArabicNameExist = await _supplierRepository.DoesExist(x => x.Name.Arabic == request.ArabicName && x.Id != request.SupplierId);
             if (doesArabicNameExist)
                 return new Result<Supplier>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameAr.Localize()));
@@ -95,8 +95,19 @@ public class SupplierCommandHandler(ISupplierRepository supplierRepository, IUni
         return supplierToBeEditedResult.WithUpdated();
     }
 
-    public Task<IResultBase> Handle(DeleteSupplierCommandModel request, CancellationToken cancellationToken)
+    public async Task<IResultBase> Handle(DeleteSupplierCommandModel request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var supplierToBeDeleted = await _supplierRepository.GetByID(request.SupplierId);
+        if (supplierToBeDeleted == null)
+            return new Result<Supplier>()
+                .WithBadRequest(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Supplier.Localize()));
+
+        _supplierRepository.Remove(supplierToBeDeleted);
+
+        var supplierToBeDeletedResult = await new Result<Supplier>(supplierToBeDeleted).WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
+        if (supplierToBeDeletedResult.IsFailed)
+            return supplierToBeDeletedResult;
+
+        return supplierToBeDeletedResult.WithDeleted();
     }
 }

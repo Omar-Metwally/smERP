@@ -35,6 +35,7 @@ public class ExternalEntity : Entity
                 return new Result<(BilingualName, List<Address>)>()
                     .WithErrors(addressResult.Errors)
                     .WithStatusCode(HttpStatusCode.BadRequest);
+
             addressList.Add(addressResult.Value);
         }
 
@@ -58,7 +59,7 @@ public class ExternalEntity : Entity
                 .WithError(SharedResourcesKeys.___ListMustContainAtleastOneItem.Localize(SharedResourcesKeys.Address.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        Addresses = new List<Address>();
+        Addresses.Clear();
 
         foreach (var (street, city, state, country, postalCode, comment) in addresses)
         {

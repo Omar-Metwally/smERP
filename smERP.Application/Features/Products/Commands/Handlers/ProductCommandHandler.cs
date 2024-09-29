@@ -74,7 +74,7 @@ public class ProductCommandHandler(
 
         if (!string.IsNullOrEmpty(request.EnglishName))
         {
-            var doesEnglishNameExist = await _productRepository.DoesExist(x => x.Name.English == request.EnglishName);
+            var doesEnglishNameExist = await _productRepository.DoesExist(x => x.Name.English == request.EnglishName && x.Id != request.ProductId);
             if (doesEnglishNameExist)
                 return new Result<Product>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameEn.Localize()));
@@ -86,7 +86,7 @@ public class ProductCommandHandler(
 
         if (!string.IsNullOrEmpty(request.ArabicName))
         {
-            var doesArabicNameExist = await _productRepository.DoesExist(x => x.Name.Arabic == request.ArabicName);
+            var doesArabicNameExist = await _productRepository.DoesExist(x => x.Name.Arabic == request.ArabicName && x.Id != request.ProductId);
             if (doesArabicNameExist)
                 return new Result<Product>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameAr.Localize()));
