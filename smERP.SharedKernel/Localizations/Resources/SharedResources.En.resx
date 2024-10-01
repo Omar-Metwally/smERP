@@ -370,4 +370,22 @@
   <data name="EnteredExpirationDateCannotExceedProductShelfLife" xml:space="preserve">
     <value>Entered Expiration Date Cannot Exceed Product Default Shelf Life</value>
   </data>
+  <data name="Branch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="ExpirationDateMustBeInTheFuture" xml:space="preserve">
+    <value>Expiration Date Must Be In The Future</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>Phone Number</value>
+  </data>
+  <data name="___MustBeBetween_And_" xml:space="preserve">
+    <value>{0} Must Be Between {1} And {2}</value>
+  </data>
+  <data name="PasswordOrEmailNotCorrect" xml:space="preserve">
+    <value>Passsword Or/And Email Are Not Correct</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
 </root>

@@ -7,7 +7,7 @@ using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
 using System.Net;
 
-namespace smERP.Application.Features.Companies.Commands.Handlers;
+namespace smERP.Application.Features.Categories.Commands.Handlers;
 
 public class CategoryCommandHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork) :
     IRequestHandler<AddCategoryCommandModel, IResultBase>,
@@ -44,7 +44,7 @@ public class CategoryCommandHandler(ICategoryRepository categoryRepository, IUni
         var categoryToBeCreated = Category.Create(request.EnglishName, request.ArabicName, request.ParentCategoryId);
         if (categoryToBeCreated.IsFailed)
             return categoryToBeCreated;
-        
+
         await categoryToBeCreated.WithTask(() => _categoryRepository.Add(categoryToBeCreated.Value, cancellationToken), SharedResourcesKeys.DatabaseError);
         if (categoryToBeCreated.IsFailed)
             return categoryToBeCreated;
@@ -52,7 +52,7 @@ public class CategoryCommandHandler(ICategoryRepository categoryRepository, IUni
         await categoryToBeCreated.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (categoryToBeCreated.IsFailed)
             return categoryToBeCreated;
-        
+
         var result = categoryToBeCreated.ChangeType(categoryToBeCreated.Value.Id)
                         .WithCreated();
         return result;
@@ -61,7 +61,7 @@ public class CategoryCommandHandler(ICategoryRepository categoryRepository, IUni
     public async Task<IResultBase> Handle(EditCategoryCommandModel request, CancellationToken cancellationToken)
     {
         var categoryToBeEdited = await _categoryRepository.GetByID(request.CategoryId);
-        if(categoryToBeEdited == null)
+        if (categoryToBeEdited == null)
             return new Result<Category>()
                 .WithBadRequest(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Category.Localize()));
 
@@ -108,7 +108,7 @@ public class CategoryCommandHandler(ICategoryRepository categoryRepository, IUni
     public async Task<IResultBase> Handle(DeleteCategoryCommandModel request, CancellationToken cancellationToken)
     {
         var categoryToBeDeleted = await _categoryRepository.GetByID(request.CategoryID);
-        if(categoryToBeDeleted == null)
+        if (categoryToBeDeleted == null)
             return new Result<Category>()
                     .WithBadRequest(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Category.Localize()));
 

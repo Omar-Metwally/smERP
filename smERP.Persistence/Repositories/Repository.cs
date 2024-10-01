@@ -16,6 +16,11 @@ public class Repository<TEntity>(DbContext context) : IRepository<TEntity> where
         return await _context.Set<TEntity>().AsTracking().FirstOrDefaultAsync(x => x.Id == ID);
     }
 
+    public virtual async Task<IEnumerable<TEntity>> GetListByIds(IEnumerable<int> Ids)
+    {
+        return await _context.Set<TEntity>().Where(x => Ids.Contains(x.Id)).ToListAsync();
+    }
+
     public async Task<IEnumerable<TEntity>> GetAll()
     {
         return await _context.Set<TEntity>().ToListAsync();

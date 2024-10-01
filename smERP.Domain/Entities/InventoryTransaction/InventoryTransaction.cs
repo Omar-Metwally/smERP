@@ -1,4 +1,5 @@
-﻿using smERP.Domain.ValueObjects;
+﻿using smERP.Domain.Entities.Organization;
+using smERP.Domain.ValueObjects;
 using smERP.SharedKernel.Responses;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
@@ -8,14 +9,17 @@ namespace smERP.Domain.Entities.InventoryTransaction;
 [NotMapped]
 public abstract class InventoryTransaction : Entity
 {
+    public int StorageLocationId { get; protected set; }
     public DateTime TransactionDate { get; protected set; }
     public decimal TotalAmount { get; protected set; }
     public bool IsCanceled { get; protected set; } = false;
+    public virtual StorageLocation StorageLocation { get; protected set; } = null!;
     //public Discount? TransactionDiscount { get; protected set; }
     public ICollection<InventoryTransactionItem> Items { get; protected set; } = new List<InventoryTransactionItem>();
 
-    protected InventoryTransaction(DateTime transactionDate, ICollection<InventoryTransactionItem> items)
+    protected InventoryTransaction(int storageLocationId, DateTime transactionDate, ICollection<InventoryTransactionItem> items)
     {
+        StorageLocationId = storageLocationId;
         TransactionDate = transactionDate;
         Items = items;
     }
@@ -43,7 +47,7 @@ public abstract class InventoryTransaction : Entity
         //Amount = TransactionDiscount?.Apply(subtotal) ?? subtotal;
     }
 
-    protected static IResult<List<InventoryTransactionItem>> CreateBaseDetails(List<(int ProductInstanceId, int Quantity, decimal? UnitPrice)> transactionItems)
+    protected static IResult<List<InventoryTransactionItem>> CreateBaseDetails(List<(int ProductInstanceId, int Quantity, decimal UnitPrice)> transactionItems)
     {
         var inventoryTransactionItemsList = new List<InventoryTransactionItem>();
 

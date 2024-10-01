@@ -27,8 +27,10 @@ public class ChangeLogInterceptor : SaveChangesInterceptor
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private void LogChanges(DbContext context)
+    private void LogChanges(DbContext? context)
     {
+        if (context == null) return;
+
         var changeLogs = new List<ChangeLog>();
         var userId = "1";//_httpContextAccessor.HttpContext?.User?.Identity?.Name;
 
@@ -42,12 +44,14 @@ public class ChangeLogInterceptor : SaveChangesInterceptor
         {
             if (entry.Entity is Entity entity && (entry.State == EntityState.Added || entry.State == EntityState.Modified || entry.State == EntityState.Deleted))
             {
-                string changes = null;
+                string? changes = null;
                 if (entry.State != EntityState.Deleted)
                 {
                     var changedProperties = entry.Properties
                         .Where(p => p.IsModified || entry.State == EntityState.Added)
                         .ToDictionary(p => p.Metadata.Name, p => p.CurrentValue);
+
+
 
                     changes = JsonConvert.SerializeObject(changedProperties, serializerSettings);
                 }

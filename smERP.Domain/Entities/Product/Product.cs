@@ -192,7 +192,7 @@ public class Product : Entity, IAggregateRoot
     private bool IsProductInstanceNotUnique(string newProductInstanceSku) 
     {
         if (ProductInstances.Count == 0)
-            return true;
+            return false;
 
         var existingProductInstanceSkus = ProductInstances.Select(x => x.Sku);
         return existingProductInstanceSkus.Any(x => x == newProductInstanceSku);

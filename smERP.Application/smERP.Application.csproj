@@ -15,4 +15,9 @@
     <ProjectReference Include="..\smERP.SharedKernel\smERP.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Events\EventHandlers\InventoryTransaction\" />
+    <Folder Include="Events\EventHandlers\" />
+  </ItemGroup>
+
 </Project>

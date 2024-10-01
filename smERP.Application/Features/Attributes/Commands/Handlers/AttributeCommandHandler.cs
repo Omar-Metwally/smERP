@@ -73,7 +73,7 @@ public class AttributeCommandHandler(IAttributeRepository attributeRepository, I
         {
             var doesArabicNameExist = await _attributeRepository.DoesExist(x => x.Name.Arabic == request.ArabicName && x.Id != request.AttributeId);
             if (doesArabicNameExist)
-                return new Result<Brand>()
+                return new Result<Attribute>()
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameAr.Localize()));
 
             attributeToBeEdited.Name.UpdateArabic(request.ArabicName);

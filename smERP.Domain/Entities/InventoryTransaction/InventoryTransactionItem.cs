@@ -11,12 +11,12 @@ public class InventoryTransactionItem : Entity
     public int TransactionId { get; private set; }
     public int ProductInstanceId { get; private set; }
     public int Quantity { get; private set; }
-    public decimal? UnitPrice { get; private set; }
+    public decimal UnitPrice { get; private set; }
     //public Discount? ItemDiscount { get; private set; }
-    public decimal TotalPrice => Quantity * UnitPrice ?? 0; //ItemDiscount?.Apply(Quantity * UnitPrice) ?? (Quantity * UnitPrice);
+    public decimal TotalPrice => Quantity * UnitPrice; //ItemDiscount?.Apply(Quantity * UnitPrice) ?? (Quantity * UnitPrice);
     public virtual ProductInstance ProductInstance { get; private set; } = null!;
 
-    private InventoryTransactionItem(int productInstanceId, int quantity, decimal? unitPrice)
+    private InventoryTransactionItem(int productInstanceId, int quantity, decimal unitPrice)
     {
         ProductInstanceId = productInstanceId;
         Quantity = quantity;
@@ -28,14 +28,14 @@ public class InventoryTransactionItem : Entity
     //    ItemDiscount = discount;
     //}
 
-    public static IResult<InventoryTransactionItem> Create(int productInstanceId, int quantity, decimal? unitPrice)
+    public static IResult<InventoryTransactionItem> Create(int productInstanceId, int quantity, decimal unitPrice)
     {
         if (quantity < 0)
             return new Result<InventoryTransactionItem>()
                 .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Quantity.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        if (unitPrice != null && unitPrice < 0)
+        if (unitPrice < 0)
             return new Result<InventoryTransactionItem>()
                 .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Price.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);

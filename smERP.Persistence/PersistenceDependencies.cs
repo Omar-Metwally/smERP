@@ -17,7 +17,8 @@ public static class PersistenceDependencies
 
         services.AddDbContext<ProductDbContext>(options =>
           options.UseSqlServer(configuration.GetConnectionString("ProductConnection"),
-          b => b.MigrationsAssembly(typeof(ProductDbContext).Assembly.FullName)));
+          b => b.MigrationsAssembly(typeof(ProductDbContext).Assembly.FullName))
+          .EnableSensitiveDataLogging());
 
         services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
         services.AddTransient<IUnitOfWork, UnitOfWork>()
@@ -26,7 +27,9 @@ public static class PersistenceDependencies
                 .AddTransient<IBrandRepository, BrandRepository>()
                 .AddTransient<IAttributeRepository, AttributeRepository>()
                 .AddTransient<IProductRepository, ProductRepository>()
-                .AddTransient<ISupplierRepository, SupplierRepository>();
+                .AddTransient<ISupplierRepository, SupplierRepository>()
+                .AddTransient<IBranchRepository, BranchRepository>()
+                .AddTransient<IProcurementTransactionRepository, ProcurementTransactionRepository>();
         return services;
     }
 }

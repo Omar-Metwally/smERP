@@ -1,43 +1,55 @@
 ﻿
+using smERP.SharedKernel.Localizations.Extensions;
+using smERP.SharedKernel.Localizations.Resources;
+using smERP.SharedKernel.Responses;
+using System.Net;
+using System.Text.RegularExpressions;
+
 namespace smERP.Domain.ValueObjects;
 
 public class PhoneNumber : ValueObject
 {
-    public string CountryCode { get; }
-    public string Number { get; }
-    public string Comment { get; }
+    public string CountryCode { get; } = null!;
+    public string Number { get; } = null!;
+    public string? Comment { get; }
 
-    public PhoneNumber(string countryCode, string number, string comment)
+    private PhoneNumber() { }
+
+    public PhoneNumber(string countryCode, string number, string? comment)
     {
         CountryCode = countryCode;
         Number = number;
         Comment = comment;
     }
 
-    //public static Result<PhoneNumber> Create(string phoneNumber)
-    //{
-    //    // Remove any non-digit characters
-    //    var digitsOnly = Regex.Replace(phoneNumber, @"\D", "");
+    public static IResult<PhoneNumber> Create(string phoneNumber, string? comment)
+    {
+        // Remove any non-digit characters
+        var digitsOnly = Regex.Replace(phoneNumber, @"\D", "");
 
-    //    if (string.IsNullOrWhiteSpace(digitsOnly))
-    //        return Result<PhoneNumber>.Failure("Phone number cannot be empty.");
+        if (string.IsNullOrWhiteSpace(digitsOnly))
+            return new Result<PhoneNumber>()
+                .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.PhoneNumber))
+                .WithStatusCode(HttpStatusCode.BadRequest);
 
-    //    if (digitsOnly.Length < 10 || digitsOnly.Length > 15)
-    //        return Result<PhoneNumber>.Failure("Phone number must be between 10 and 15 digits.");
+        if (digitsOnly.Length < 10 || digitsOnly.Length > 15)
+            return new Result<PhoneNumber>()
+                .WithError(SharedResourcesKeys.___MustBeBetween_And_.Localize(SharedResourcesKeys.PhoneNumber.Localize(),"10","15"))
+                .WithStatusCode(HttpStatusCode.BadRequest);
 
-    //    string countryCode = "";
-    //    string number = digitsOnly;
+        string countryCode = "";
+        string number = digitsOnly;
 
-    //    // If the number starts with a plus, assume the first 1-3 digits are the country code
-    //    if (phoneNumber.StartsWith("+"))
-    //    {
-    //        int countryCodeLength = Math.Min(3, digitsOnly.Length - 9);
-    //        countryCode = digitsOnly.Substring(0, countryCodeLength);
-    //        number = digitsOnly.Substring(countryCodeLength);
-    //    }
+        // If the number starts with a plus, assume the first 1-3 digits are the country code
+        if (phoneNumber.StartsWith('+'))
+        {
+            int countryCodeLength = Math.Min(3, digitsOnly.Length - 9);
+            countryCode = digitsOnly[..countryCodeLength];
+            number = digitsOnly[countryCodeLength..];
+        }
 
-    //    return Result<PhoneNumber>.Success(new PhoneNumber(countryCode, number));
-    //}
+        return new Result<PhoneNumber>(new PhoneNumber(countryCode, number, comment));
+    }
 
     public string ToFormattedString()
     {

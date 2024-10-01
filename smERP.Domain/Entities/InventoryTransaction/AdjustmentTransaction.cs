@@ -3,7 +3,7 @@ namespace smERP.Domain.Entities.InventoryTransaction;
 
 public class AdjustmentTransaction : InventoryTransaction
 {
-    public AdjustmentTransaction(DateTime transactionDate, ICollection<InventoryTransactionItem> items) : base(transactionDate, items)
+    public AdjustmentTransaction(int storageLocationId,DateTime transactionDate, ICollection<InventoryTransactionItem> items) : base(storageLocationId, transactionDate, items)
     {
     }
 

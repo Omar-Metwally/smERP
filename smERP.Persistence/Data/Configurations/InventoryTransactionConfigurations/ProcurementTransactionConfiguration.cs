@@ -12,6 +12,8 @@ public class ProcurementTransactionConfiguration : IEntityTypeConfiguration<Proc
 
         builder.HasOne(x => x.Supplier).WithMany().HasForeignKey(x => x.SupplierId);
 
+        builder.HasOne(x => x.StorageLocation).WithMany(x => x.ProcurementTransactions).HasForeignKey(x => x.StorageLocationId);
+
         builder.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
 
         builder.OwnsMany(x => x.Items, w =>

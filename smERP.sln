@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "smERP.Persistence", "smERP.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "smERP.Application", "smERP.Application\smERP.Application.csproj", "{36A7D1C9-C3AA-441E-A854-B2BA4308A20E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "smERP.SharedKernel", "smERP.SharedKernel\smERP.SharedKernel.csproj", "{323BD7E0-6AC2-401B-B7B2-C073AD4E0D67}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "smERP.SharedKernel", "smERP.SharedKernel\smERP.SharedKernel.csproj", "{323BD7E0-6AC2-401B-B7B2-C073AD4E0D67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "smERP.Infrastructure", "smERP.Infrastructure\smERP.Infrastructure.csproj", "{6D56C21D-4FED-4304-966B-9A7B85A156BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{323BD7E0-6AC2-401B-B7B2-C073AD4E0D67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{323BD7E0-6AC2-401B-B7B2-C073AD4E0D67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{323BD7E0-6AC2-401B-B7B2-C073AD4E0D67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D56C21D-4FED-4304-966B-9A7B85A156BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D56C21D-4FED-4304-966B-9A7B85A156BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D56C21D-4FED-4304-966B-9A7B85A156BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D56C21D-4FED-4304-966B-9A7B85A156BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

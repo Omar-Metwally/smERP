@@ -22,5 +22,11 @@ public class StorageLocationConfiguration : IEntityTypeConfiguration<StorageLoca
                 y.HasIndex(x => x.SerialNumber).IsClustered(false);
             });
         });
+
+        //builder.HasMany(x => x.AdjustmentTransactions).WithOne().HasForeignKey(x => x.StorageLocationId);
+
+        //builder.HasMany(x => x.ProcurementTransactions).WithOne().HasForeignKey(x => x.StorageLocationId);
+
+        //builder.HasMany(x => x.SalesTransactions).WithOne().HasForeignKey(x => x.StorageLocationId);
     }
 }

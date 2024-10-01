@@ -4,7 +4,7 @@ using smERP.Domain.Entities.ExternalEntities;
 
 namespace smERP.Persistence.Data.Configurations.ExternalEntitiesConfigurations;
 
-public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
+internal class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
 {
     public void Configure(EntityTypeBuilder<Supplier> builder)
     {

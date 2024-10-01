@@ -1,4 +1,5 @@
-﻿using smERP.Domain.Entities.Product;
+﻿using smERP.Domain.Entities.InventoryTransaction;
+using smERP.Domain.Entities.Product;
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
@@ -10,7 +11,11 @@ public class StorageLocation : Entity, IAggregateRoot
     public int BranchId { get; private set; }
     public string Name { get; private set; } = null!;
     public virtual Branch Branch { get; private set; } = null!;
-    public ICollection<StoredProductInstance> StoredProductInstances { get; private set; } = new List<StoredProductInstance>;
+    public ICollection<StoredProductInstance> StoredProductInstances { get; private set; } = new List<StoredProductInstance>();
+    public ICollection<AdjustmentTransaction> AdjustmentTransactions { get; private set; } = new List<AdjustmentTransaction>();
+    public ICollection<ProcurementTransaction> ProcurementTransactions { get; private set; } = new List<ProcurementTransaction>();
+    public ICollection<SalesTransaction> SalesTransactions { get; private set; } = new List<SalesTransaction>();
+
 
     private StorageLocation() { }
 

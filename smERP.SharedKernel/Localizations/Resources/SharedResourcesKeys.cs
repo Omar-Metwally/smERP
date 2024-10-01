@@ -1,4 +1,6 @@
-﻿namespace smERP.SharedKernel.Localizations.Resources
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace smERP.SharedKernel.Localizations.Resources
 {
     public static class SharedResourcesKeys
     {
@@ -15,9 +17,11 @@
         public const string Success = "Success";
 
         public const string ___MustBeAPositiveNumber = "___MustBeAPositiveNumber";
+        public const string ___MustBeBetween_And_ = "___MustBeBetween_And_";
         public const string ___ListMustContainAtleastOneItem = "___ListMustContainAtleastOneItem";
         public const string ___ListCannotContainDuplicates = "___ListCannotContainDuplicates";
         public const string SomeItemsIn___ListAreNotCorrect = "SomeItemsIn___ListAreNotCorrect";
+        public const string ExpirationDateMustBeInTheFuture = "ExpirationDateMustBeInTheFuture";
         public const string EnteredExpirationDateCannotExceedProductShelfLife = "EnteredExpirationDateCannotExceedProductShelfLife";
         public const string NotEmpty = "NotEmpty";
         public const string NotData = "NotData";
@@ -40,8 +44,10 @@
         public const string IsExist = "IsExist";
         public const string IsNotExist = "IsNotExist";
         public const string EmailIsExist = "EmailIsExist";
+        public const string Email = "Email";
 
         public const string PasswordNotEqualConfirmPass = "PasswordNotEqualConfirmPass";
+        public const string PasswordOrEmailNotCorrect = "PasswordOrEmailNotCorrect";
         public const string PasswordNotCorrect = "PasswordNotCorrect";
         public const string UserNameIsExist = "UserNameIsExist";
 
@@ -56,6 +62,7 @@
 
         public const string Attribute = "Attribute";
         public const string Brand = "Brand";
+        public const string Branch = "Branch";
         public const string Company = "Company";
         public const string Category = "Category";
         public const string Product = "Product";
@@ -69,6 +76,7 @@
         public const string ShelfLife = "ShelfLife";
         public const string StorageLocation = "StorageLocation";
         public const string SerialNumber = "SerialNumber";
+        public const string PhoneNumber = "PhoneNumber";
 
         public const string AttributeList = "AttributeList";
         public const string Price = "Price";

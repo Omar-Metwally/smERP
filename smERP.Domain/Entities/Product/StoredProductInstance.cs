@@ -23,6 +23,8 @@ public class StoredProductInstance
         Items = items;
     }
 
+    private StoredProductInstance() { }
+
     public static IResult<StoredProductInstance> Create(int storageLocationId, (int ProductInstanceId, int Quantity, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, DateOnly? ExpirationDate)>? Items) product)
     {
         if (product.Quantity < 0)
@@ -33,7 +35,7 @@ public class StoredProductInstance
         if (!product.IsTracked)
             return CreateNonTrackedStoredProductInstance(storageLocationId, product.ProductInstanceId, product.Quantity);
 
-        if (product.Items == null || product.Items.Count() < 0)
+        if (product.Items == null || product.Items.Count < 0)
             return new Result<StoredProductInstance>()
                 .WithError(SharedResourcesKeys.___ListMustContainAtleastOneItem.Localize(SharedResourcesKeys.Product.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);
@@ -45,7 +47,7 @@ public class StoredProductInstance
 
         if (product.Items.Count != product.Quantity)
             return new Result<StoredProductInstance>()
-                .WithError(SharedResourcesKeys.___ListMustContainAtleastOneItem.Localize(SharedResourcesKeys.Product.Localize()))
+                .WithError(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.Product.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
         if (product.ShelfLifeInDays != null)

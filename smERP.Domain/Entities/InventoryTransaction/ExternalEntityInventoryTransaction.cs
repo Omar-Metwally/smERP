@@ -10,14 +10,14 @@ public abstract class ExternalEntityInventoryTransaction : InventoryTransaction
 {
     public ICollection<TransactionPayment> Payments { get; private set; } = null!;
 
-    protected ExternalEntityInventoryTransaction(DateTime transactionDate, ICollection<TransactionPayment>? payments, ICollection<InventoryTransactionItem> items) : base(transactionDate, items)
+    protected ExternalEntityInventoryTransaction(int storageLocationId, DateTime transactionDate, ICollection<TransactionPayment>? payments, ICollection<InventoryTransactionItem> items) : base(storageLocationId, transactionDate, items)
     {
         Payments = payments ?? new List<TransactionPayment>();
     }
 
     protected ExternalEntityInventoryTransaction() { }
 
-    protected static IResult<(List<TransactionPayment>, List<InventoryTransactionItem>)> Create(List<(decimal PayedAmount, string PaymentMethod)>? payments,List<(int ProductInstanceId, int Quantity, decimal? UnitPrice)> transactionItems)
+    protected static IResult<(List<TransactionPayment>, List<InventoryTransactionItem>)> Create(List<(decimal PayedAmount, string PaymentMethod)>? payments,List<(int ProductInstanceId, int Quantity, decimal UnitPrice)> transactionItems)
     {
         var baseDetailsCreateResult = CreateBaseDetails(transactionItems);
         if (baseDetailsCreateResult.IsFailed)

@@ -366,4 +366,22 @@
   <data name="EnteredExpirationDateCannotExceedProductShelfLife" xml:space="preserve">
     <value>تاريخ الصلاحية المدخل لا يمكن ان يتعدي تاريخ الصلاحية الخاص بالمنتج</value>
   </data>
+  <data name="Branch" xml:space="preserve">
+    <value>الفرع</value>
+  </data>
+  <data name="ExpirationDateMustBeInTheFuture" xml:space="preserve">
+    <value>تاريخ انتهاء الصلاحية يجب ان يكون في المستقبل</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>رقم الهاتف</value>
+  </data>
+  <data name="___MustBeBetween_And_" xml:space="preserve">
+    <value>{0} يجب ان يكون ما بين {1} و {2}</value>
+  </data>
+  <data name="PasswordOrEmailNotCorrect" xml:space="preserve">
+    <value>الايميل او كلمة السر غير صحيحة</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>الايميل</value>
+  </data>
 </root>

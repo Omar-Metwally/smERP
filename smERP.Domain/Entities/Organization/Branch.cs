@@ -87,6 +87,24 @@ public class Branch : Entity, IAggregateRoot
         return new Result<StorageLocation>(storageLocationToBeUpdated);
     }
 
+    public IResult<StorageLocation> RemoveStorageLocation(int storageLocationId)
+    {
+        if (storageLocationId < 0)
+            return new Result<StorageLocation>()
+                .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.StorageLocation.Localize()))
+                .WithStatusCode(HttpStatusCode.BadRequest);
+
+        var storageLocationToBeDeleted = StorageLocations.FirstOrDefault(x => x.Id == storageLocationId);
+        if (storageLocationToBeDeleted == null)
+            return new Result<StorageLocation>()
+                .WithError(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.StorageLocation.Localize()))
+                .WithStatusCode(HttpStatusCode.BadRequest);
+
+        StorageLocations.Remove(storageLocationToBeDeleted);
+
+        return new Result<StorageLocation>(storageLocationToBeDeleted);
+    }
+
     //public void SetBranchManager(string branchManagerId)
     //{
     //    if (string.IsNullOrWhiteSpace(branchManagerId))

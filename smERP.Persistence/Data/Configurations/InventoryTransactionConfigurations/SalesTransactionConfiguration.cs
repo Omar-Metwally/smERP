@@ -12,6 +12,8 @@ public class SalesTransactionConfiguration : IEntityTypeConfiguration<SalesTrans
 
         builder.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
 
+        builder.HasOne(x => x.StorageLocation).WithMany(x => x.SalesTransactions).HasForeignKey(x => x.StorageLocationId);
+
         builder.OwnsMany(x => x.Items, w =>
         {
             w.WithOwner().HasForeignKey(x => x.TransactionId);

@@ -4,9 +4,9 @@ using smERP.SharedKernel.Localizations.Extensions;
 using smERP.Application;
 using smERP.Persistence;
 using System.Globalization;
-using smERP.SharedKernel.Responses;
 using Serilog;
 using smERP.WebApi.Middleware;
+using smERP.Infrastructure;
 
 namespace smERP.WebApi;
 
@@ -40,7 +40,10 @@ public class Program
 
         builder.Services.AddHttpContextAccessor();
 
+        builder.Services.AddAuthentication();
+
         builder.Services.AddApplicationDependencies()
+                        .AddInfrastructureDependencies(builder.Configuration)
                         .AddPersistenceDependencies(builder.Configuration);
 
         builder.Services.AddLocalization();

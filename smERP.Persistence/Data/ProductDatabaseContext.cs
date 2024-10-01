@@ -14,6 +14,8 @@ using Attribute = smERP.Domain.Entities.Product.Attribute;
 using smERP.Domain.Entities.ExternalEntities;
 using smERP.Domain.Entities.InventoryTransaction;
 using smERP.Domain.Entities.Organization;
+using smERP.Persistence.Outbox;
+using smERP.Domain.Entities.User;
 
 namespace smERP.Persistence.Data;
 
@@ -22,8 +24,9 @@ public class ProductDbContext(DbContextOptions<ProductDbContext> options) : DbCo
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(new ChangeLogInterceptor());
         optionsBuilder.AddInterceptors(new SoftDeleteInterceptor());
+        optionsBuilder.AddInterceptors(new ChangeLogInterceptor());
+        optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
     }
 
     public virtual DbSet<Attribute> Attributes { get; set; }
@@ -52,28 +55,30 @@ public class ProductDbContext(DbContextOptions<ProductDbContext> options) : DbCo
 
     public virtual DbSet<AdjustmentTransaction> AdjustmentTransactions { get; set; }
 
-
+    public virtual DbSet<Employee> Employees { get; set; }
 
     //public virtual DbSet<ProductInstanceAttribute> ProductInstanceAttributes { get; set; }
 
     public virtual DbSet<ChangeLog> ChangeLogs { get; set; }
 
+    public virtual DbSet<OutboxMessage> OutboxMessages { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        // Apply global query filter for soft delete to all entities implementing ISoftDelete
-        Expression<Func<ISoftDelete, bool>> filterExpr = e => !e.IsDeleted;
-        foreach (var mutableEntityType in modelBuilder.Model.GetEntityTypes())
-        {
-            if (mutableEntityType.ClrType.IsAssignableTo(typeof(ISoftDelete)))
-            {
-                var parameter = Expression.Parameter(mutableEntityType.ClrType);
-                var body = ReplacingExpressionVisitor.Replace(filterExpr.Parameters.First(), parameter, filterExpr.Body);
-                var lambdaExpression = Expression.Lambda(body, parameter);
-                modelBuilder.Entity(mutableEntityType.ClrType).HasQueryFilter(lambdaExpression);
-            }
-        }
+        //// Apply global query filter for soft delete to all entities implementing ISoftDelete
+        //Expression<Func<ISoftDelete, bool>> filterExpr = e => !e.IsDeleted;
+        //foreach (var mutableEntityType in modelBuilder.Model.GetEntityTypes())
+        //{
+        //    if (mutableEntityType.ClrType.IsAssignableTo(typeof(ISoftDelete)))
+        //    {
+        //        var parameter = Expression.Parameter(mutableEntityType.ClrType);
+        //        var body = ReplacingExpressionVisitor.Replace(filterExpr.Parameters.First(), parameter, filterExpr.Body);
+        //        var lambdaExpression = Expression.Lambda(body, parameter);
+        //        modelBuilder.Entity(mutableEntityType.ClrType).HasQueryFilter(lambdaExpression);
+        //    }
+        //}
 
         //modelBuilder.Entity<Attribute>(entity =>
         //{

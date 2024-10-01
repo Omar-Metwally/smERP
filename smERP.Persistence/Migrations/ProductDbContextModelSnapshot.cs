@@ -81,6 +81,9 @@ namespace smERP.Persistence.Migrations
                     b.Property<bool>("IsCanceled")
                         .HasColumnType("bit");
 
+                    b.Property<int>("StorageLocationId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -90,6 +93,8 @@ namespace smERP.Persistence.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StorageLocationId");
 
                     b.ToTable("AdjustmentTransactions");
                 });
@@ -105,6 +110,9 @@ namespace smERP.Persistence.Migrations
                     b.Property<bool>("IsCanceled")
                         .HasColumnType("bit");
 
+                    b.Property<int>("StorageLocationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("SupplierId")
                         .HasColumnType("int");
 
@@ -117,6 +125,8 @@ namespace smERP.Persistence.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StorageLocationId");
 
                     b.HasIndex("SupplierId");
 
@@ -137,6 +147,9 @@ namespace smERP.Persistence.Migrations
                     b.Property<bool>("IsCanceled")
                         .HasColumnType("bit");
 
+                    b.Property<int>("StorageLocationId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -146,6 +159,8 @@ namespace smERP.Persistence.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StorageLocationId");
 
                     b.ToTable("SalesTransactions");
                 });
@@ -289,6 +304,9 @@ namespace smERP.Persistence.Migrations
                     b.Property<int?>("ShelfLifeInDays")
                         .HasColumnType("int");
 
+                    b.Property<int?>("WarrantyInDays")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BrandId");
@@ -357,37 +375,53 @@ namespace smERP.Persistence.Migrations
                     b.ToTable("ProductSupplier");
                 });
 
+            modelBuilder.Entity("smERP.Domain.Entities.User.Employee", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.ToTable("Employees", (string)null);
+                });
+
+            modelBuilder.Entity("smERP.Persistence.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Contect")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OccuredOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OutboxMessages");
+                });
+
             modelBuilder.Entity("smERP.Domain.Entities.ExternalEntities.Supplier", b =>
                 {
-                    b.OwnsOne("smERP.Domain.ValueObjects.BilingualName", "Name", b1 =>
-                        {
-                            b1.Property<int>("SupplierId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Arabic")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.Property<string>("English")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.HasKey("SupplierId");
-
-                            b1.HasIndex("Arabic");
-
-                            SqlServerIndexBuilderExtensions.IsClustered(b1.HasIndex("Arabic"), false);
-
-                            b1.HasIndex("English");
-
-                            SqlServerIndexBuilderExtensions.IsClustered(b1.HasIndex("English"), false);
-
-                            b1.ToTable("Suppliers");
-
-                            b1.WithOwner()
-                                .HasForeignKey("SupplierId");
-                        });
-
                     b.OwnsMany("smERP.Domain.ValueObjects.Address", "Addresses", b1 =>
                         {
                             b1.Property<int>("Id")
@@ -432,6 +466,35 @@ namespace smERP.Persistence.Migrations
                                 .HasForeignKey("SupplierId");
                         });
 
+                    b.OwnsOne("smERP.Domain.ValueObjects.BilingualName", "Name", b1 =>
+                        {
+                            b1.Property<int>("SupplierId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Arabic")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("English")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.HasKey("SupplierId");
+
+                            b1.HasIndex("Arabic");
+
+                            SqlServerIndexBuilderExtensions.IsClustered(b1.HasIndex("Arabic"), false);
+
+                            b1.HasIndex("English");
+
+                            SqlServerIndexBuilderExtensions.IsClustered(b1.HasIndex("English"), false);
+
+                            b1.ToTable("Suppliers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SupplierId");
+                        });
+
                     b.Navigation("Addresses");
 
                     b.Navigation("Name")
@@ -440,6 +503,12 @@ namespace smERP.Persistence.Migrations
 
             modelBuilder.Entity("smERP.Domain.Entities.InventoryTransaction.AdjustmentTransaction", b =>
                 {
+                    b.HasOne("smERP.Domain.Entities.Organization.StorageLocation", "StorageLocation")
+                        .WithMany("AdjustmentTransactions")
+                        .HasForeignKey("StorageLocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("smERP.Domain.Entities.InventoryTransaction.InventoryTransactionItem", "Items", b1 =>
                         {
                             b1.Property<int>("TransactionId")
@@ -457,7 +526,7 @@ namespace smERP.Persistence.Migrations
                             b1.Property<int>("Quantity")
                                 .HasColumnType("int");
 
-                            b1.Property<decimal?>("UnitPrice")
+                            b1.Property<decimal>("UnitPrice")
                                 .HasColumnType("decimal(18,2)");
 
                             b1.HasKey("TransactionId", "Id");
@@ -479,10 +548,18 @@ namespace smERP.Persistence.Migrations
                         });
 
                     b.Navigation("Items");
+
+                    b.Navigation("StorageLocation");
                 });
 
             modelBuilder.Entity("smERP.Domain.Entities.InventoryTransaction.ProcurementTransaction", b =>
                 {
+                    b.HasOne("smERP.Domain.Entities.Organization.StorageLocation", "StorageLocation")
+                        .WithMany("ProcurementTransactions")
+                        .HasForeignKey("StorageLocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("smERP.Domain.Entities.ExternalEntities.Supplier", "Supplier")
                         .WithMany()
                         .HasForeignKey("SupplierId")
@@ -506,7 +583,7 @@ namespace smERP.Persistence.Migrations
                             b1.Property<int>("Quantity")
                                 .HasColumnType("int");
 
-                            b1.Property<decimal?>("UnitPrice")
+                            b1.Property<decimal>("UnitPrice")
                                 .HasColumnType("decimal(18,2)");
 
                             b1.HasKey("TransactionId", "Id");
@@ -562,11 +639,19 @@ namespace smERP.Persistence.Migrations
 
                     b.Navigation("Payments");
 
+                    b.Navigation("StorageLocation");
+
                     b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("smERP.Domain.Entities.InventoryTransaction.SalesTransaction", b =>
                 {
+                    b.HasOne("smERP.Domain.Entities.Organization.StorageLocation", "StorageLocation")
+                        .WithMany("SalesTransactions")
+                        .HasForeignKey("StorageLocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("smERP.Domain.Entities.InventoryTransaction.InventoryTransactionItem", "Items", b1 =>
                         {
                             b1.Property<int>("TransactionId")
@@ -584,7 +669,7 @@ namespace smERP.Persistence.Migrations
                             b1.Property<int>("Quantity")
                                 .HasColumnType("int");
 
-                            b1.Property<decimal?>("UnitPrice")
+                            b1.Property<decimal>("UnitPrice")
                                 .HasColumnType("decimal(18,2)");
 
                             b1.HasKey("TransactionId", "Id");
@@ -639,6 +724,8 @@ namespace smERP.Persistence.Migrations
                     b.Navigation("Items");
 
                     b.Navigation("Payments");
+
+                    b.Navigation("StorageLocation");
                 });
 
             modelBuilder.Entity("smERP.Domain.Entities.Organization.Branch", b =>
@@ -718,7 +805,7 @@ namespace smERP.Persistence.Migrations
 
                                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
 
-                                    b2.Property<DateOnly>("ExpirationDate")
+                                    b2.Property<DateOnly?>("ExpirationDate")
                                         .HasColumnType("date");
 
                                     b2.Property<int>("ProductInstanceId")
@@ -1037,6 +1124,97 @@ namespace smERP.Persistence.Migrations
                     b.Navigation("Supplier");
                 });
 
+            modelBuilder.Entity("smERP.Domain.Entities.User.Employee", b =>
+                {
+                    b.HasOne("smERP.Domain.Entities.Organization.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("smERP.Domain.ValueObjects.Address", "Address", b1 =>
+                        {
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Comment")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("EmployeeId")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("PostalCode")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("EmployeeId")
+                                .IsUnique();
+
+                            b1.ToTable("EmployeeAddresses", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("EmployeeId");
+                        });
+
+                    b.OwnsMany("smERP.Domain.ValueObjects.PhoneNumber", "PhoneNumbers", b1 =>
+                        {
+                            b1.Property<string>("EmployeeId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("Comment")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CountryCode")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Number")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("EmployeeId", "Id");
+
+                            b1.ToTable("EmployeePhoneNumbers", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("EmployeeId");
+                        });
+
+                    b.Navigation("Address");
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("PhoneNumbers");
+                });
+
             modelBuilder.Entity("smERP.Domain.Entities.ExternalEntities.Supplier", b =>
                 {
                     b.Navigation("SuppliedProducts");
@@ -1045,6 +1223,15 @@ namespace smERP.Persistence.Migrations
             modelBuilder.Entity("smERP.Domain.Entities.Organization.Branch", b =>
                 {
                     b.Navigation("StorageLocations");
+                });
+
+            modelBuilder.Entity("smERP.Domain.Entities.Organization.StorageLocation", b =>
+                {
+                    b.Navigation("AdjustmentTransactions");
+
+                    b.Navigation("ProcurementTransactions");
+
+                    b.Navigation("SalesTransactions");
                 });
 
             modelBuilder.Entity("smERP.Domain.Entities.Product.Attribute", b =>
