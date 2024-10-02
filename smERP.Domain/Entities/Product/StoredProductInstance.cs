@@ -63,9 +63,10 @@ public class StoredProductInstance
                 .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
+        Quantity += quantity;
+
         if (!IsTrackedByItem)
         {
-            Quantity += quantity;
             return new Result<StoredProductInstance>(this);
         }
 

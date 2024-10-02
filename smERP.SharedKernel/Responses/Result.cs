@@ -194,6 +194,32 @@ public class Result<T> : FluentResults.Result<T>, IResult<T>
     {
         throw new NotImplementedException();
     }
+
+    public IResult<T> WithBadRequestResult(string? errorMessage)
+    {
+        StatusCode = HttpStatusCode.BadRequest;
+        Message = SharedResourcesKeys.BadRequest.Localize();
+        if (errorMessage is null)
+            return this;
+        return WithError(errorMessage);
+    }
+
+    public IResult<T> WithBadRequestResult(IEnumerable<string> errorMessages)
+    {
+        StatusCode = HttpStatusCode.BadRequest;
+        Message = SharedResourcesKeys.BadRequest.Localize();
+        if (errorMessages is null)
+            return this;
+        return WithErrors(errorMessages);
+    }
+
+    IResultBase IResultBase.WithErrors(IEnumerable<string> errorMessages)
+    {
+        StatusCode = HttpStatusCode.BadRequest;
+        Message = SharedResourcesKeys.BadRequest.Localize();
+        base.WithErrors(errorMessages);
+        return this;
+    }
 }
 
 // Non-generic version of Result for compatibility
@@ -263,6 +289,7 @@ public interface IResultBase : FluentResults.IResultBase
     public IResultBase WithUpdated();
     public IResultBase WithBadRequest(string? errorMessage);
     public IResultBase WithDeleted();
+    public IResultBase WithErrors(IEnumerable<string> errorMessages);
     public Task<IResultBase> WithTask(Func<Task> task);
     public Task<IResultBase> WithTask(Func<Task> task, string errorMessageIfFail);
 }
@@ -279,5 +306,10 @@ public interface IResult<T> : IResultBase
     public IResult<T> WithStatusCode(HttpStatusCode statusCode);
     public IResult<T> WithMessage(string message);
     public IResult<T> WithNotFound(string? errorMessage);
+    //public new IResult<T> WithCreated();
+    //public new IResult<T> WithUpdated();
+    public IResult<T> WithBadRequestResult(string? errorMessage);
+    public IResult<T> WithBadRequestResult(IEnumerable<string> errorMessages);
+    //public new IResult<T> WithDeleted();
     public IResult<TNewValue> ChangeType<TNewValue>(TNewValue value);
 }

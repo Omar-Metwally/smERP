@@ -19,11 +19,13 @@ The project is organized into the following layers:
 
 2. **smERP.Domain**: Houses the core business logic, including domain entities and value objects.
 
-3. **smERP.Persistence**: Manages data persistence using Entity Framework Core, repositories, and the Unit of Work pattern.
+3. **smERP.Infrastructure**: Focuses on external concerns that can be provided by third parties, currently utilized for identity management.
 
-4. **smERP.Application**: Implements application logic, including request handlers, commands, and queries.
+4. **smERP.Persistence**: Manages data persistence using Entity Framework Core, repositories, and the Unit of Work pattern.
 
-5. **smERP.WebApi**: Provides the API endpoints for interacting with the system.
+5. **smERP.Application**: Implements application logic, including request handlers, commands, and queries.
+
+6. **smERP.WebApi**: Provides the API endpoints for interacting with the system.
 
 ## Key Technologies and Packages
 

@@ -16,6 +16,8 @@ public class ProcurementTransactionConfiguration : IEntityTypeConfiguration<Proc
 
         builder.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
 
+        builder.Property(x => x.IsTransactionProcessed);
+
         builder.OwnsMany(x => x.Items, w =>
         {
             w.WithOwner().HasForeignKey(x => x.TransactionId);

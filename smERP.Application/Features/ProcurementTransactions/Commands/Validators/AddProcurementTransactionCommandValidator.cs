@@ -21,10 +21,6 @@ public class AddProcurementTransactionCommandValidator : AbstractValidator<AddPr
             .GreaterThan(0)
             .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Branch.Localize()));
 
-        RuleFor(command => command.BranchId)
-            .GreaterThan(0)
-            .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Branch.Localize()));
-
         RuleForEach(x => x.Products).ChildRules(product =>
         {
             product.RuleFor(p => p.ProductInstanceId)
@@ -34,25 +30,12 @@ public class AddProcurementTransactionCommandValidator : AbstractValidator<AddPr
             product.RuleFor(p => p.Quantity)
                 .GreaterThan(0)
                 .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()));
-
-            product.RuleFor(p => p.Items.Count)
-                .Equal(p => p.Quantity)
-                .When(p => p.Items != null)
-                .WithMessage(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.Product.Localize()));
-
-            product.RuleForEach(p => p.Items)
-            .ChildRules(item =>
-            {
-                item.RuleFor(i => i.SerialNumber)
-                .NotEmpty()
-                .WithMessage(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.Product.Localize()));
-
-                item.RuleFor(i => i.ExpirationDate)
-                    .GreaterThan(DateOnly.FromDateTime(DateTime.UtcNow))
-                    .When(i => i.ExpirationDate.HasValue)
-                    .WithMessage(SharedResourcesKeys.ExpirationDateMustBeInTheFuture.Localize());
-            })
-            .When(p => p.Items != null);
         });
+
+        RuleFor(command => command.Payment)
+            .Must(payment => payment == null || payment.PayedAmount > 0)
+            .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.PayedAmount.Localize()))
+            .When(command => command.Payment != null);
+
     }
 }

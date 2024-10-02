@@ -13,6 +13,14 @@ public abstract class Entity
 
     public int Id { get; private set; }
 
+    public string CreatedBy { get; private set; }
+
+    public DateTime CreatedAt { get; private set; }
+
+    public string ModifiedBy { get; private set; }
+
+    public DateTime ModifiedAt { get; private set; }
+
     public IReadOnlyCollection<IDomainEvent> Events => _events.ToList().AsReadOnly();
 
     public virtual void ClearEvents() => _events.Clear();
@@ -62,5 +70,19 @@ public abstract class Entity
     public bool IsTransient()
     {
         return Id == 0;
+    }
+
+    public void Created(string userId, DateTime date)
+    {
+        CreatedBy = userId;
+        CreatedAt = date;
+        ModifiedBy = userId;
+        ModifiedAt = date;
+    }
+
+    public void Modified(string userId, DateTime date)
+    {
+        ModifiedBy = userId;
+        ModifiedAt = date;
     }
 }

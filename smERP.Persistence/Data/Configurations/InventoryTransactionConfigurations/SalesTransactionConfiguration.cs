@@ -14,6 +14,8 @@ public class SalesTransactionConfiguration : IEntityTypeConfiguration<SalesTrans
 
         builder.HasOne(x => x.StorageLocation).WithMany(x => x.SalesTransactions).HasForeignKey(x => x.StorageLocationId);
 
+        builder.Property(x => x.IsTransactionProcessed);
+
         builder.OwnsMany(x => x.Items, w =>
         {
             w.WithOwner().HasForeignKey(x => x.TransactionId);

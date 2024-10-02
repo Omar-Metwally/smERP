@@ -39,12 +39,14 @@ public class StorageLocation : Entity, IAggregateRoot
                 if (existingStoredProductUpdateResult.IsFailed)
                     return existingStoredProductUpdateResult.ChangeType(new List<StoredProductInstance>());
             }
+            else
+            {
+                var storedProductCreateResult = StoredProductInstance.Create(Id, product);
+                if (storedProductCreateResult.IsFailed)
+                    return storedProductCreateResult.ChangeType(new List<StoredProductInstance>());
 
-            var storedProductCreateResult = StoredProductInstance.Create(Id, product);
-            if (storedProductCreateResult.IsFailed)
-                return storedProductCreateResult.ChangeType(new List<StoredProductInstance>());
-
-            StoredProductInstances.Add(storedProductCreateResult.Value);
+                StoredProductInstances.Add(storedProductCreateResult.Value);
+            }
         }
 
         return new Result<List<StoredProductInstance>>(StoredProductInstances.ToList());

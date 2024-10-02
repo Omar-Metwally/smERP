@@ -33,4 +33,22 @@ public class TransactionPayment : Entity
 
         return new Result<TransactionPayment>(new TransactionPayment(payedAmount, paymentMethod));
     }
+
+    internal IResult<TransactionPayment> Update(decimal payedAmount, string paymentMethod)
+    {
+        if (payedAmount < 0)
+            return new Result<TransactionPayment>()
+                .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.PayedAmount.Localize()))
+                .WithStatusCode(HttpStatusCode.BadRequest);
+
+        if (!string.IsNullOrEmpty(paymentMethod))
+            return new Result<TransactionPayment>()
+                .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.PaymentMethod.Localize()))
+                .WithStatusCode(HttpStatusCode.BadRequest);
+
+        PayedAmount = payedAmount;
+        PaymentMethod = paymentMethod;
+
+        return new Result<TransactionPayment>(this);
+    }
 }

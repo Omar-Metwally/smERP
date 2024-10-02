@@ -1,4 +1,4 @@
-﻿using smERP.Persistence.Contracts;
+﻿using smERP.Application.Contracts.Persistence;
 
 namespace smERP.Persistence.Data;
 

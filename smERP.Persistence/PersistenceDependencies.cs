@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using smERP.Persistence.Contracts;
+using smERP.Application.Contracts.Persistence;
 using smERP.Persistence.Data;
 using smERP.Persistence.Repositories;
 
@@ -29,7 +29,9 @@ public static class PersistenceDependencies
                 .AddTransient<IProductRepository, ProductRepository>()
                 .AddTransient<ISupplierRepository, SupplierRepository>()
                 .AddTransient<IBranchRepository, BranchRepository>()
-                .AddTransient<IProcurementTransactionRepository, ProcurementTransactionRepository>();
+                .AddTransient<IProcurementTransactionRepository, ProcurementTransactionRepository>()
+                .AddTransient<IStorageLocationRepository, StorageLocationRepository>();
+
         return services;
     }
 }

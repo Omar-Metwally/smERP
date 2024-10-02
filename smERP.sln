@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "smERP.Application", "smERP.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "smERP.SharedKernel", "smERP.SharedKernel\smERP.SharedKernel.csproj", "{323BD7E0-6AC2-401B-B7B2-C073AD4E0D67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "smERP.Infrastructure", "smERP.Infrastructure\smERP.Infrastructure.csproj", "{6D56C21D-4FED-4304-966B-9A7B85A156BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "smERP.Infrastructure", "smERP.Infrastructure\smERP.Infrastructure.csproj", "{6D56C21D-4FED-4304-966B-9A7B85A156BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

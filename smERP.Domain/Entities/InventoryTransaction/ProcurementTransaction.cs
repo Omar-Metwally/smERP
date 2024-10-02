@@ -31,5 +31,10 @@ public class ProcurementTransaction : ExternalEntityInventoryTransaction
         return new Result<ProcurementTransaction>(new ProcurementTransaction(storageLocationId, supplierId, transactionDate??DateTime.UtcNow, baseDetailsCreateResult.Value.Item1, baseDetailsCreateResult.Value.Item2));
     }
 
+    public void UpdateSupplier(int supplierId)
+    {
+        SupplierId = supplierId;
+    }
+
     public override string GetTransactionType() => "Procurement";
 }

@@ -1,5 +1,7 @@
 ﻿using smERP.Domain.Entities.Organization;
 using smERP.Domain.ValueObjects;
+using smERP.SharedKernel.Localizations.Extensions;
+using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
@@ -13,6 +15,7 @@ public abstract class InventoryTransaction : Entity
     public DateTime TransactionDate { get; protected set; }
     public decimal TotalAmount { get; protected set; }
     public bool IsCanceled { get; protected set; } = false;
+    public bool IsTransactionProcessed { get; protected set; } = false;
     public virtual StorageLocation StorageLocation { get; protected set; } = null!;
     //public Discount? TransactionDiscount { get; protected set; }
     public ICollection<InventoryTransactionItem> Items { get; protected set; } = new List<InventoryTransactionItem>();
@@ -22,6 +25,7 @@ public abstract class InventoryTransaction : Entity
         StorageLocationId = storageLocationId;
         TransactionDate = transactionDate;
         Items = items;
+        RecalculateAmount();
     }
 
     protected InventoryTransaction() { }
@@ -38,6 +42,16 @@ public abstract class InventoryTransaction : Entity
     {
         Items.Add(item);
         RecalculateAmount();
+    }
+
+    public void TransactionProcessed()
+    {
+        IsTransactionProcessed = true;
+    }
+
+    public void UnderTransactionProcessing()
+    {
+        IsTransactionProcessed = false;
     }
 
     protected virtual void RecalculateAmount()
@@ -59,9 +73,66 @@ public abstract class InventoryTransaction : Entity
                     .WithErrors(inventoryTransactionItemsResult.Errors)
                     .WithStatusCode(HttpStatusCode.BadRequest);
 
-            inventoryTransactionItemsList.Add(inventoryTransactionItemsResult.Value);      
+            inventoryTransactionItemsList.Add(inventoryTransactionItemsResult.Value);
         }
 
         return new Result<List<InventoryTransactionItem>>(inventoryTransactionItemsList);
+    }
+
+    public IResult<List<InventoryTransactionItem>> UpdateTransactionItems(List<(int ProductInstanceId, int Quantity, decimal UnitPrice)> transactionItems)
+    {
+        foreach (var (productInstanceId, quantity, unitPrice) in transactionItems)
+        {
+            var existingInventoryTransactionItem = Items.FirstOrDefault(x => x.ProductInstanceId == productInstanceId);
+            if (existingInventoryTransactionItem != null)
+            {
+                var updateResult = existingInventoryTransactionItem.Update(unitPrice, quantity);
+                if (updateResult.IsFailed)
+                    return new Result<List<InventoryTransactionItem>>()
+                        .WithErrors(updateResult.Errors)
+                        .WithStatusCode(HttpStatusCode.BadRequest);
+
+                continue;
+            }
+
+            var newInventoryTransactionItem = InventoryTransactionItem.Create(productInstanceId, quantity, unitPrice);
+            if (newInventoryTransactionItem.IsFailed)
+                return new Result<List<InventoryTransactionItem>>()
+                    .WithErrors(newInventoryTransactionItem.Errors)
+                    .WithStatusCode(HttpStatusCode.BadRequest);
+
+            Items.Add(newInventoryTransactionItem.Value);
+        }
+        //it would be set false until these updates are reflected in the stored products
+        IsTransactionProcessed = false;
+
+        RecalculateAmount();
+
+        return new Result<List<InventoryTransactionItem>>(Items.ToList());
+    }
+
+    public IResultBase RemoveTransactionItems(List<int> productInstanceIds)
+    {
+        if (productInstanceIds.Distinct().Count() == productInstanceIds.Count)
+            return new Result<List<InventoryTransactionItem>>()
+                .WithError(SharedResourcesKeys.___ListCannotContainDuplicates.Localize(SharedResourcesKeys.Product.Localize()))
+                .WithStatusCode(HttpStatusCode.BadRequest);
+
+        foreach (var productInstanceId in productInstanceIds)
+        {
+            var inventoryTransactionItemToBeRemoved = Items.FirstOrDefault(x => x.ProductInstanceId == productInstanceId);
+            if (inventoryTransactionItemToBeRemoved == null)
+                return new Result<List<InventoryTransactionItem>>()
+                    .WithError(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.Product.Localize()))
+                    .WithStatusCode(HttpStatusCode.BadRequest);
+
+            Items.Remove(inventoryTransactionItemToBeRemoved);
+        }
+        //it would be set false until these updates are reflected in the stored products
+        IsTransactionProcessed = false;
+
+        RecalculateAmount();
+
+        return new Result<List<InventoryTransactionItem>>(Items.ToList());
     }
 }

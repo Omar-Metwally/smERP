@@ -20,7 +20,8 @@
     <ProjectReference Include="..\smERP.Application\smERP.Application.csproj" />
     <ProjectReference Include="..\smERP.Domain\smERP.Domain.csproj" />
     <ProjectReference Include="..\smERP.Infrastructure\smERP.Infrastructure.csproj" />
-    <ProjectReference Include="..\smERP.SharedKernel\smERP.SharedKernel.csproj" />
+	<ProjectReference Include="..\smERP.Persistence\smERP.Persistence.csproj" />
+	<ProjectReference Include="..\smERP.SharedKernel\smERP.SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>

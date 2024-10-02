@@ -12,6 +12,8 @@ public class AdjustmentTransactionConfiguration : IEntityTypeConfiguration<Adjus
 
         builder.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
 
+        builder.Property(x => x.IsTransactionProcessed);
+
         builder.HasOne(x => x.StorageLocation).WithMany(x => x.AdjustmentTransactions).HasForeignKey(x => x.StorageLocationId);
 
         builder.OwnsMany(x => x.Items, w =>

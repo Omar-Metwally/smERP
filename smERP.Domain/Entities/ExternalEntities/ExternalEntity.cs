@@ -4,7 +4,7 @@ using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
 using System.Net;
 
-namespace smERP.Domain.Entities;
+namespace smERP.Domain.Entities.ExternalEntities;
 
 public class ExternalEntity : Entity
 {

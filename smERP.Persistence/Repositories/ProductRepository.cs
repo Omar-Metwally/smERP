@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using smERP.Domain.Entities;
 using smERP.Domain.Entities.Product;
-using smERP.Persistence.Contracts;
+using smERP.Application.Contracts.Persistence;
 using smERP.Persistence.Data;
 using System.Linq;
 

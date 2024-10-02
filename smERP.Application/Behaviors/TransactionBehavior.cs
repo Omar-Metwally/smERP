@@ -1,6 +1,6 @@
 ﻿using MediatR;
+using smERP.Application.Contracts.Persistence;
 using smERP.Application.MarkerInterfaces;
-using smERP.Persistence.Contracts;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
 using System.Net;

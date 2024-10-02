@@ -388,4 +388,25 @@
   <data name="Email" xml:space="preserve">
     <value>Email</value>
   </data>
+  <data name="Role" xml:space="preserve">
+    <value>Role</value>
+  </data>
+  <data name="Claim" xml:space="preserve">
+    <value>Claim</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="___FieldDoesNotMeetCriteria" xml:space="preserve">
+    <value>{0} Does Not Meet Field Criteria</value>
+  </data>
+  <data name="Procurement Transaction" xml:space="preserve">
+    <value>Procurement Transaction</value>
+  </data>
+  <data name="ThisTransactionIsAlreadyProcessed" xml:space="preserve">
+    <value>This Transaction Is Already Processed</value>
+  </data>
+  <data name="PaymentTransaction" xml:space="preserve">
+    <value>Payment Transaction</value>
+  </data>
 </root>

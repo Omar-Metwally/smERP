@@ -42,4 +42,29 @@ public class InventoryTransactionItem : Entity
 
         return new Result<InventoryTransactionItem>(new InventoryTransactionItem(productInstanceId, quantity, unitPrice));
     }
+
+    public IResult<InventoryTransactionItem> Update(decimal? unitPrice, int? quantity)
+    {
+        if (quantity != null && quantity.HasValue)
+        {
+            if (quantity < 0)
+                return new Result<InventoryTransactionItem>()
+                    .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Quantity.Localize()))
+                    .WithStatusCode(HttpStatusCode.BadRequest);
+
+            Quantity = quantity.Value;
+        }
+
+        if (unitPrice != null && unitPrice.HasValue)
+        {
+            if (unitPrice < 0)
+                return new Result<InventoryTransactionItem>()
+                    .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Price.Localize()))
+                    .WithStatusCode(HttpStatusCode.BadRequest);
+
+            UnitPrice = unitPrice.Value;
+        }
+
+        return new Result<InventoryTransactionItem>(this);
+    }
 }

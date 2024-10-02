@@ -24,9 +24,10 @@ public class ProductDbContext(DbContextOptions<ProductDbContext> options) : DbCo
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(new SoftDeleteInterceptor());
-        optionsBuilder.AddInterceptors(new ChangeLogInterceptor());
-        optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
+        optionsBuilder.AddInterceptors(new CentralInterceptor());
+        //optionsBuilder.AddInterceptors(new SoftDeleteInterceptor());
+        //optionsBuilder.AddInterceptors(new ChangeLogInterceptor());
+        //optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
     }
 
     public virtual DbSet<Attribute> Attributes { get; set; }

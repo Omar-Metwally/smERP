@@ -5,8 +5,7 @@ namespace smERP.Infrastructure.Identity.Models.Users;
 
 public class ApplicationUser : IdentityUser
 {
-    public virtual Employee Employee { get; set; } = null!;
-
+    public virtual Employee Employee { get; set; } = new Employee();
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime RefreshTokenExpiration { get; set; } = DateTime.MinValue;
 
@@ -14,6 +13,11 @@ public class ApplicationUser : IdentityUser
     {
         RefreshToken = Guid.NewGuid().ToString();
         RefreshTokenExpiration = DateTime.UtcNow.AddDays(30);
+    }
+
+    public void AddBranch(int branchId)
+    {
+        Employee.BranchId = branchId;
     }
 
     public bool IsRefreshTokenValid(string token)

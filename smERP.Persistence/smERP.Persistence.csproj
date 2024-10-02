@@ -15,6 +15,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\smERP.Domain\smERP.Domain.csproj" />
+	<ProjectReference Include="..\smERP.Application\smERP.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Contracts\" />
   </ItemGroup>
 
 </Project>

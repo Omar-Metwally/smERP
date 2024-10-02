@@ -384,4 +384,25 @@
   <data name="Email" xml:space="preserve">
     <value>الايميل</value>
   </data>
+  <data name="Role" xml:space="preserve">
+    <value>الوظيفة</value>
+  </data>
+  <data name="Claim" xml:space="preserve">
+    <value>حق</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>المستخدم</value>
+  </data>
+  <data name="___FieldDoesNotMeetCriteria" xml:space="preserve">
+    <value>{0} لا يطابق شروط الحقل</value>
+  </data>
+  <data name="ProcurementTransaction" xml:space="preserve">
+    <value>عملية شراء</value>
+  </data>
+  <data name="ThisTransactionIsAlreadyProcessed" xml:space="preserve">
+    <value>هذه العملية تمت معالجتها بالفعل</value>
+  </data>
+  <data name="PaymentTransaction" xml:space="preserve">
+    <value>عملية الدفع</value>
+  </data>
 </root>

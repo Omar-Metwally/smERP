@@ -1,7 +1,7 @@
 ﻿using MediatR;
+using smERP.Application.Contracts.Persistence;
 using smERP.Application.Features.Categories.Commands.Models;
 using smERP.Domain.Entities.Product;
-using smERP.Persistence.Contracts;
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;

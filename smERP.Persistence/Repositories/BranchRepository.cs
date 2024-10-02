@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using smERP.Domain.Entities.Organization;
-using smERP.Persistence.Contracts;
+using smERP.Application.Contracts.Persistence;
 using smERP.Persistence.Data;
 
 namespace smERP.Persistence.Repositories;

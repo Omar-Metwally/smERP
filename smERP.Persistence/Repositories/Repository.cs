@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using smERP.Domain.Entities;
-using smERP.Persistence.Contracts;
+using smERP.Application.Contracts.Persistence;
 using smERP.Persistence.Data;
 using smERP.SharedKernel.Bases;
 using System.Linq.Expressions;

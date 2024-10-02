@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using smERP.Application.Features.Attributes.Commands.Models;
 using smERP.Application.Features.Branches.Commands.Models;
-using smERP.Application.Features.StorageLocations.Comands.Models;
+using smERP.Application.Features.StorageLocations.Commands.Models;
 
 namespace smERP.WebApi.Controllers;
 
@@ -51,6 +51,14 @@ public class BranchesController : AppControllerBase
 
     [HttpDelete("{request.BranchId}/storage-location/{request.StorageLocationId}")]
     public async Task<IActionResult> DeleteStorageLocation([FromBody] DeleteStorageLocationCommandModel request)
+    {
+        var response = await Mediator.Send(request);
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpPost("{request.BranchId}/storage-location/{request.StorageLocationId}/procurement-transactions")]
+    public async Task<IActionResult> CreateStoredProductInstances([FromBody] AddProductInstanceToStorageLocationModel request)
     {
         var response = await Mediator.Send(request);
         var apiResult = response.ToApiResult();

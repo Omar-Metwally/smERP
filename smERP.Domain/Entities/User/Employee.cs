@@ -10,7 +10,7 @@ namespace smERP.Domain.Entities.User;
 public class Employee : IAggregateRoot
 {
     public string Id { get; private set; } = null!;
-    public int BranchId { get; private set; }
+    public int BranchId { get; set; }
     public Address? Address { get; private set; }
     public ICollection<PhoneNumber>? PhoneNumbers { get; private set; }
     public virtual Branch Branch { get; private set; } = null!;
@@ -23,7 +23,7 @@ public class Employee : IAggregateRoot
         PhoneNumbers = phoneNumbers;
     }
 
-    private Employee() { }
+    public Employee() { }
 
     public static IResult<Employee> Create(string employeeId, int branchId, (string street, string city, string state, string country, string postalCode, string? comment)? address, List<(string number, string? comment)>? phoneNumbers)
     {

@@ -1,8 +1,8 @@
 ﻿using MediatR;
+using smERP.Application.Contracts.Persistence;
 using smERP.Application.Features.Branches.Commands.Models;
-using smERP.Application.Features.StorageLocations.Comands.Models;
+using smERP.Application.Features.StorageLocations.Commands.Models;
 using smERP.Domain.Entities.Organization;
-using smERP.Persistence.Contracts;
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;

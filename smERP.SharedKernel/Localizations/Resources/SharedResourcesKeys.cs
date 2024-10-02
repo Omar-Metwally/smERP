@@ -5,6 +5,7 @@ namespace smERP.SharedKernel.Localizations.Resources
     public static class SharedResourcesKeys
     {
         public const string Required_FieldName = "Required";
+        public const string ___FieldDoesNotMeetCriteria = "___FieldDoesNotMeetCriteria";
         public const string NotFound = "NotFound";
         public const string Deleted = "Deleted";
         public const string Created = "Created";
@@ -15,7 +16,7 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string DeletedSuccess = "DeletedSuccess";
         public const string UpdatedSuccess = "UpdatedSuccess";
         public const string Success = "Success";
-
+        
         public const string ___MustBeAPositiveNumber = "___MustBeAPositiveNumber";
         public const string ___MustBeBetween_And_ = "___MustBeBetween_And_";
         public const string ___ListMustContainAtleastOneItem = "___ListMustContainAtleastOneItem";
@@ -26,6 +27,9 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string NotEmpty = "NotEmpty";
         public const string NotData = "NotData";
 
+        public const string User = "User";
+        public const string Role = "Role";
+        public const string Claim = "Claim";
         public const string UnAuthorized = "UnAuthorized";
         public const string BadRequest = "BadRequest";
         public const string UnProcessableEntity = "UnProcessableEntity";
@@ -33,7 +37,6 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string FailedToAdd = "FailedToAdd";
         public const string UpdateFailed = "UpdateFailed";
         public const string DeletedFailed = "DeletedFailed";
-
 
         public const string NameEnIsExist = "NameEnIsExist";
         public const string NameArIsExist = "NameArIsExist";
@@ -75,6 +78,8 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string Supplier = "Supplier";
         public const string ShelfLife = "ShelfLife";
         public const string StorageLocation = "StorageLocation";
+        public const string ProcurementTransaction = "ProcurementTransaction";
+        public const string PaymentTransaction = "PaymentTransaction";
         public const string SerialNumber = "SerialNumber";
         public const string PhoneNumber = "PhoneNumber";
 
@@ -97,6 +102,7 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string ParentCategory = "ParentCategory";
         public const string ParentCategoryMustHaveNoProduct = "ParentCategoryMustHaveNoProduct";
         public const string ProductInstanceDuplicate = "ProductInstanceDuplicate";
+        public const string ThisTransactionIsAlreadyProcessed = "ThisTransactionIsAlreadyProcessed";
 
         public const string DatabaseError = "DatabaseError";
         public const string InternalServerError = "InternalServerError";
