@@ -15,19 +15,5 @@ public class EditBranchCommandValidator : AbstractValidator<EditBranchCommandMod
             var errorMessage = SharedResourcesKeys.Required_FieldName.Localize(fieldName);
             return errorMessage;
         });
-
-        RuleFor(c => c.ArabicName).NotEmpty().WithMessage(c =>
-        {
-            var fieldName = SharedResourcesKeys.NameAr.Localize();
-            var errorMessage = SharedResourcesKeys.Required_FieldName.Localize(fieldName);
-            return errorMessage;
-        });
-
-        RuleFor(c => c.EnglishName).NotEmpty().WithMessage(c =>
-        {
-            var fieldName = SharedResourcesKeys.NameEn.Localize();
-            var errorMessage = SharedResourcesKeys.Required_FieldName.Localize(fieldName);
-            return errorMessage;
-        });
     }
 }

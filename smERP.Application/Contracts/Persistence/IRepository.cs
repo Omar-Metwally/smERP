@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using smERP.SharedKernel.Responses;
+using System.Linq.Expressions;
 
 namespace smERP.Application.Contracts.Persistence;
 
@@ -14,5 +15,10 @@ public interface IRepository<T> where T : class
     Task<int> CountExisting(IEnumerable<int> IDs);
     void Update(T entity);
     void Remove(T entity);
+
+    Task<PagedResult<T>> GetPagedAsync(PaginationParameters parameters);
+
+    Task<IEnumerable<T>> FindAllAsync(Expression<Func<T, bool>> criteria, int? take, int? skip,
+    Expression<Func<T, object>> orderBy = null, string orderByDirection = "asc");
     //Task Hide(int ID);
 }

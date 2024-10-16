@@ -25,6 +25,11 @@ public class Employee : IAggregateRoot
 
     public Employee() { }
 
+    public void AddAddress(string country, string city, string state, string street, string postalCode, string? comment)
+    {
+        Address = Address.Create(country, city, state, street, postalCode, comment).Value;
+    }
+
     public static IResult<Employee> Create(string employeeId, int branchId, (string street, string city, string state, string country, string postalCode, string? comment)? address, List<(string number, string? comment)>? phoneNumbers)
     {
         if (branchId < 0)

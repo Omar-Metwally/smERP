@@ -8,13 +8,19 @@ using Microsoft.IdentityModel.Tokens;
 using smERP.Application.Contracts.Infrastructure.Identity;
 using smERP.Application.Features.Auth.Commands.Models;
 using smERP.Application.Features.Auth.Commands.Results;
+using smERP.Application.Features.Auth.Queries.Responses;
+using smERP.Application.Features.Branches.Queries.Models;
+using smERP.Domain.Entities.Organization;
+using smERP.Domain.ValueObjects;
 using smERP.Infrastructure.Identity.Models;
 using smERP.Infrastructure.Identity.Models.Users;
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
 using System.Data;
+using System.Diagnostics.Metrics;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -45,6 +51,10 @@ public class AuthService(
                 .WithStatusCode(HttpStatusCode.BadRequest);
         }
 
+        if (user.IsAccountDisabled)
+            return new Result<LoginResult>()
+                .WithBadRequestResult(SharedResourcesKeys.AccountDisabledContactAdmin.Localize());
+
         var result = await _signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
 
         JwtSecurityToken jwtSecurityToken = await GenerateToken(user);
@@ -74,15 +84,25 @@ public class AuthService(
                 .WithError(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.Email))
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
+        var existingRoles = await _roleManager.Roles.Where(role => request.Roles.Contains(role.Name)).ToListAsync();
+        if (existingRoles.Count != request.Roles.Count)
+            return new Result<RegisterResult>()
+                .WithError(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.Role))
+                .WithStatusCode(HttpStatusCode.BadRequest);
+
         var user = new ApplicationUser
         {
             Email = request.Email,
-            UserName = request.FirstName + request.LastName,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            UserName = request.FirstName +"_"+ request.LastName,
+            PhoneNumber = request.PhoneNumber,
             EmailConfirmed = true,
         };
 
-        //user.Employee.BranchId = request.BranchId;
         user.AddBranch(request.BranchId);
+
+        user.Employee.AddAddress(request.Address.Country, request.Address.City, request.Address.State, request.Address.Street, request.Address.PostalCode, request.Address.Comment);
 
         var result = await _userManager.CreateAsync(user, request.Password);
 
@@ -91,11 +111,40 @@ public class AuthService(
                 .WithErrors(result.Errors.Select(a => a.Description).ToList())
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        //await _userManager.AddToRoleAsync(user, "Employee");
-        return new Result<RegisterResult>(new RegisterResult() { UserId = user.Id });
+        await _userManager.AddToRolesAsync(user, request.Roles);
 
+        return new Result<RegisterResult>(new RegisterResult() { UserId = user.Id });
     }
-    public async Task<IResultBase> CreateRole(CreateRoleCommandModel request)
+
+    public async Task<IResultBase> DisableUserAccount(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            new Result<bool>()
+                .WithBadRequestResult(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.User.Localize()));
+
+        user.IsAccountDisabled = true;
+
+        await _userManager.UpdateAsync(user);
+
+        return new Result<bool>();
+    }
+
+    public async Task<IResultBase> EnableUserAccount(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            new Result<bool>()
+                .WithBadRequestResult(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.User.Localize()));
+
+        user.IsAccountDisabled = false;
+
+        await _userManager.UpdateAsync(user);
+
+        return new Result<bool>();
+    }
+
+    public async Task<IResultBase> CreateRole(AddRoleCommandModel request)
     {
         var doesRoleExist = await _roleManager.RoleExistsAsync(request.RoleName);
         if (doesRoleExist)
@@ -222,7 +271,8 @@ public class AuthService(
     public async Task<IResult<IEnumerable<string?>>> GetAllRoles()
     {
         var roles = await _roleManager.Roles.Select(x => x.Name).ToListAsync();
-        return new Result<IEnumerable<string?>>(roles ?? new List<string?>());
+        if (roles == null) return new Result<IEnumerable<string?>>();
+        return new Result<IEnumerable<string?>>(roles);
     }
 
     public async Task<IResult<IEnumerable<(string Type, string Value)>>> GetRoleClaims(string roleName)
@@ -346,7 +396,7 @@ public class AuthService(
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim("uid", user.Id)
@@ -366,4 +416,143 @@ public class AuthService(
         return jwtSecurityToken;
     }
 
+    public async Task<IResult<PagedResult<GetPaginatedUsersQueryResponse>>> GetPaginatedUsers(PaginationParameters parameters)
+    {
+        var query = _userManager.Users.AsQueryable();
+
+        if (!string.IsNullOrEmpty(parameters.SearchTerm))
+        {
+            query = query.Where(u => u.UserName.Contains(parameters.SearchTerm) || u.Email.Contains(parameters.SearchTerm));
+        }
+
+        if (!string.IsNullOrEmpty(parameters.SortBy))
+        {
+            query = parameters.SortDescending
+                ? query.OrderByDescending(u => EF.Property<object>(u, parameters.SortBy))
+                : query.OrderBy(u => EF.Property<object>(u, parameters.SortBy));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var pagedUsers = await query
+            .AsNoTracking()
+            .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+            .Take(parameters.PageSize)
+            .Select(u => new
+            {
+                u.Employee,
+                u.Id,
+                u.FirstName,
+                u.LastName,
+                u.UserName,
+                u.Email,
+                u.Employee.BranchId,
+                u.PhoneNumber,
+                u.Employee.Address,
+                u.IsAccountDisabled
+            })
+            .ToListAsync();
+
+        var userRoles = new Dictionary<string, List<string>>();
+        foreach (var user in pagedUsers)
+        {
+            var roles = await _userManager.GetRolesAsync(await _userManager.FindByIdAsync(user.Id));
+            userRoles[user.Id] = roles.ToList();
+        }
+
+        // Combine user data with roles
+        var pagedData = pagedUsers.Select(u => new GetPaginatedUsersQueryResponse(u.Id, u.FirstName, u.LastName, u.UserName, u.Email, u.PhoneNumber, u.Employee.Address?.ToSingleLineString() ?? "Not Available", u.IsAccountDisabled, u.BranchId, userRoles[u.Id])).ToList();
+
+        var pagedResult = new PagedResult<GetPaginatedUsersQueryResponse>()
+        {
+            TotalCount = totalCount,
+            PageNumber = parameters.PageNumber,
+            PageSize = parameters.PageSize,
+            Data = pagedData,
+        };
+
+        return new Result<PagedResult<GetPaginatedUsersQueryResponse>>(pagedResult);
+    }
+
+    public async Task<IResult<GetUserQueryResponse>> GetUserById(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+            return new Result<GetUserQueryResponse>()
+                .WithBadRequestResult(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.User.Localize()));
+
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        var response = new GetUserQueryResponse(
+            user.Id, 
+            user.FirstName, 
+            user.LastName, 
+            user.UserName ?? "", 
+            user.Email ?? "", 
+            user.PhoneNumber ?? "", 
+            new  Application.Features.Suppliers.Commands.Models.Address(
+                user.Employee.Address?.Country ?? "", 
+                user.Employee.Address?.City ?? "",
+                user.Employee.Address?.State ?? "",
+                user.Employee.Address?.Street ?? "",
+                user.Employee.Address?.PostalCode ?? "",
+                user.Employee.Address?.Comment),
+            user.Employee.BranchId,
+            userRoles);
+
+        return new Result<GetUserQueryResponse>(response);
+    }
+
+    public async Task<IResultBase> UpdateUser(EditUserCommandModel request)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
+            return new Result<bool>()
+                .WithBadRequestResult(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.User.Localize()));
+
+        if (request.FirstName != null)
+            user.FirstName = request.FirstName;
+
+        if (request.LastName != null)
+            user.LastName = request.LastName;
+
+        if (request.Email != null)
+            user.Email = request.Email;
+
+        if (request.BranchId.HasValue)
+            user.Employee.BranchId = request.BranchId.Value;
+
+        if (request.PhoneNumber != null)
+            user.PhoneNumber = request.PhoneNumber;
+
+        if (request.Address != null)
+            user.Employee.AddAddress(request.Address.Country, request.Address.City, request.Address.State, request.Address.Street, request.Address.PostalCode, request.Address.Comment);
+
+        if (!string.IsNullOrEmpty(request.Password))
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, request.Password);
+            if (!result.Succeeded)
+                return new Result<bool>().WithBadRequestResult(result.Errors.Select(e => e.Description));
+        }
+
+        if (request.Roles != null && request.Roles.Count > 0)
+        {
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var rolesToRemove = currentRoles.Except(request.Roles);
+            var rolesToAdd = request.Roles.Except(currentRoles);
+
+            if (rolesToRemove.Any())
+                await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+
+            if (rolesToAdd.Any())
+                await _userManager.AddToRolesAsync(user, rolesToAdd);
+        }
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            return new Result<bool>().WithBadRequestResult(updateResult.Errors.Select(e => e.Description));
+
+        return new Result<bool>();
+    }
 }

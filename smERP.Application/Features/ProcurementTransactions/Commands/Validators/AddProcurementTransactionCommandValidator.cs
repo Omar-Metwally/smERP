@@ -21,6 +21,11 @@ public class AddProcurementTransactionCommandValidator : AbstractValidator<AddPr
             .GreaterThan(0)
             .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Branch.Localize()));
 
+        RuleFor(command => command.Products)
+            .NotNull()
+            .Must(command => command.Count > 0)
+            .WithMessage(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Product.Localize()));
+
         RuleForEach(x => x.Products).ChildRules(product =>
         {
             product.RuleFor(p => p.ProductInstanceId)
@@ -30,6 +35,15 @@ public class AddProcurementTransactionCommandValidator : AbstractValidator<AddPr
             product.RuleFor(p => p.Quantity)
                 .GreaterThan(0)
                 .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()));
+
+            product.RuleForEach(p => p.Units)
+                .ChildRules(item =>
+                {
+                    item.RuleFor(i => i.SerialNumber)
+                    .NotEmpty()
+                    .WithMessage(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.Product.Localize()));
+                })
+                .When(p => p.Units != null);
         });
 
         RuleFor(command => command.Payment)

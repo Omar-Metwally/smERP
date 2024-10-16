@@ -13,6 +13,7 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
             .HasForeignKey(d => d.BrandId);
 
         builder.Property(x => x.Id).ValueGeneratedOnAdd();
+
         builder
             .OwnsOne(p => p.Name, w =>
             {

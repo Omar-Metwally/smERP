@@ -7,4 +7,8 @@ public record EditSupplierCommandModel(
     int SupplierId,
     string? EnglishName,
     string? ArabicName,
-    List<Address>? Addresses) : IRequest<IResultBase>;
+    List<Address>? Addresses) : IRequest<IResultBase>
+{
+    public int SupplierId { get; set; } = SupplierId;
+}
+

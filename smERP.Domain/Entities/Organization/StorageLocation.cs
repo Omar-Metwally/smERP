@@ -21,6 +21,7 @@ public class StorageLocation : Entity, IAggregateRoot
 
     internal StorageLocation(int branchId, string name)
     {
+        BranchId = branchId;
         Name = name;
     }
 

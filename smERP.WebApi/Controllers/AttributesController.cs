@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using smERP.Application.Features.Attributes.Commands.Models;
+using smERP.Application.Features.Attributes.Queries.Models;
+using smERP.SharedKernel.Responses;
 
 namespace smERP.WebApi.Controllers;
 
@@ -7,13 +9,30 @@ namespace smERP.WebApi.Controllers;
 [ApiController]
 public class AttributesController : AppControllerBase
 {
-    //[HttpGet("{request.CategoryId}")]
-    //public async Task<IActionResult> GetById([FromRoute] GetBrand request)
-    //{
-    //    var response = await Mediator.Send(request);
-    //    var apiResult = response.ToApiResult();
-    //    return StatusCode(apiResult.StatusCode, apiResult);
-    //}
+
+    [HttpGet("List")]
+    public async Task<IActionResult> GetAttributes()
+    {
+        var response = await Mediator.Send(new GetAttributesQuery());
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetPaginatedAttributes([FromQuery] GetPaginatedAttributesQuery request)
+    {
+        var response = await Mediator.Send(request);
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpGet("{attributeId:int}")]
+    public async Task<IActionResult> GetAttribute(int attributeId)
+    {
+        var response = await Mediator.Send(new GetAttributeQuery(attributeId));
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
 
     [HttpPost]
     public async Task<IActionResult> CreateAttribute([FromBody] AddAttributeCommandModel request)

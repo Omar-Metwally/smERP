@@ -426,6 +426,8 @@ namespace smERP.Persistence.Migrations
                     b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("smERP.Domain.Entities.Product.Product", b =>
@@ -734,6 +736,57 @@ namespace smERP.Persistence.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("TransactionId");
 
+                            b1.OwnsMany("smERP.Domain.Entities.InventoryTransaction.InventoryTransactionItemUnit", "InventoryTransactionItemUnits", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<DateTime>("CreatedAt")
+                                        .HasColumnType("datetime2");
+
+                                    b2.Property<string>("CreatedBy")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<DateTime>("ModifiedAt")
+                                        .HasColumnType("datetime2");
+
+                                    b2.Property<string>("ModifiedBy")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<int>("ProductInstanceId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("SerialNumber")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<string>("Status")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<int>("TransactionId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("TransactionItemId")
+                                        .HasColumnType("int");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("TransactionId", "TransactionItemId");
+
+                                    b2.ToTable("AdjustmentTransactions_Items_InventoryTransactionItemUnits");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("TransactionId", "TransactionItemId");
+                                });
+
+                            b1.Navigation("InventoryTransactionItemUnits");
+
                             b1.Navigation("ProductInstance");
                         });
 
@@ -804,6 +857,57 @@ namespace smERP.Persistence.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("TransactionId");
+
+                            b1.OwnsMany("smERP.Domain.Entities.InventoryTransaction.InventoryTransactionItemUnit", "InventoryTransactionItemUnits", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<DateTime>("CreatedAt")
+                                        .HasColumnType("datetime2");
+
+                                    b2.Property<string>("CreatedBy")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<DateTime>("ModifiedAt")
+                                        .HasColumnType("datetime2");
+
+                                    b2.Property<string>("ModifiedBy")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<int>("ProductInstanceId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("SerialNumber")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<string>("Status")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<int>("TransactionId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("TransactionItemId")
+                                        .HasColumnType("int");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("TransactionId", "TransactionItemId");
+
+                                    b2.ToTable("ProcurementTransactions_Items_InventoryTransactionItemUnits");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("TransactionId", "TransactionItemId");
+                                });
+
+                            b1.Navigation("InventoryTransactionItemUnits");
 
                             b1.Navigation("ProductInstance");
                         });
@@ -918,6 +1022,57 @@ namespace smERP.Persistence.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("TransactionId");
+
+                            b1.OwnsMany("smERP.Domain.Entities.InventoryTransaction.InventoryTransactionItemUnit", "InventoryTransactionItemUnits", b2 =>
+                                {
+                                    b2.Property<int>("Id")
+                                        .ValueGeneratedOnAdd()
+                                        .HasColumnType("int");
+
+                                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b2.Property<int>("Id"));
+
+                                    b2.Property<DateTime>("CreatedAt")
+                                        .HasColumnType("datetime2");
+
+                                    b2.Property<string>("CreatedBy")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<DateTime>("ModifiedAt")
+                                        .HasColumnType("datetime2");
+
+                                    b2.Property<string>("ModifiedBy")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<int>("ProductInstanceId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<string>("SerialNumber")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<string>("Status")
+                                        .IsRequired()
+                                        .HasColumnType("nvarchar(max)");
+
+                                    b2.Property<int>("TransactionId")
+                                        .HasColumnType("int");
+
+                                    b2.Property<int>("TransactionItemId")
+                                        .HasColumnType("int");
+
+                                    b2.HasKey("Id");
+
+                                    b2.HasIndex("TransactionId", "TransactionItemId");
+
+                                    b2.ToTable("SalesTransactions_Items_InventoryTransactionItemUnits");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("TransactionId", "TransactionItemId");
+                                });
+
+                            b1.Navigation("InventoryTransactionItemUnits");
 
                             b1.Navigation("ProductInstance");
                         });
@@ -1359,6 +1514,26 @@ namespace smERP.Persistence.Migrations
 
                             b1.Navigation("ProductInstance");
                         });
+
+                    b.OwnsMany("smERP.Domain.ValueObjects.Image", "Images", b1 =>
+                        {
+                            b1.Property<string>("Path")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<int>("ProductInstanceId")
+                                .HasColumnType("int");
+
+                            b1.HasKey("Path");
+
+                            b1.HasIndex("ProductInstanceId");
+
+                            b1.ToTable("Image");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductInstanceId");
+                        });
+
+                    b.Navigation("Images");
 
                     b.Navigation("Product");
 

@@ -2,6 +2,7 @@
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -25,7 +26,7 @@ public class Product : Entity, IAggregateRoot
     public virtual ICollection<ProductInstance> ProductInstances { get; private set; } = new List<ProductInstance>();
     public virtual ICollection<ProductSupplier> ProductSuppliers { get; private set; } = new List<ProductSupplier>();
 
-    private Product(BilingualName name, string modelNumber, int brandId, int categoryId, string? description = null, int? shelfLifeInDays = null)
+    private Product(BilingualName name, string modelNumber, int brandId, int categoryId, string? description = null, int? shelfLifeInDays = null, int? warrantyInDays = null)
     {
         Name = name;
         ModelNumber = modelNumber;
@@ -33,11 +34,12 @@ public class Product : Entity, IAggregateRoot
         CategoryId = categoryId;
         Description = description;
         ShelfLifeInDays = shelfLifeInDays;
+        WarrantyInDays = warrantyInDays;
     }
 
     private Product() { }
 
-    public static IResult<Product> Create(string englishName, string arabicName, string modelNumber, int brandId, int categoryId, string? description = null, int? shelfLifeInDays = null)
+    public static IResult<Product> Create(string englishName, string arabicName, string modelNumber, int brandId, int categoryId, string? description = null, int? shelfLifeInDays = null, int? warrantyInDays = null)
     {
 
         var nameResult = BilingualName.Create(englishName, arabicName);
@@ -54,7 +56,7 @@ public class Product : Entity, IAggregateRoot
             return result;
         }
 
-        return new Result<Product>(new Product(nameResult.Value, modelNumber, brandId, categoryId, description, shelfLifeInDays))
+        return new Result<Product>(new Product(nameResult.Value, modelNumber, brandId, categoryId, description, shelfLifeInDays, warrantyInDays))
             .WithStatusCode(HttpStatusCode.Created)
             .WithMessage(SharedResourcesKeys.Created.Localize());
     }
@@ -82,6 +84,11 @@ public class Product : Entity, IAggregateRoot
     public void UpdateShelfLife(int shelfLife)
     {
         ShelfLifeInDays = shelfLife;
+    }
+
+    public void UpdateWarranty(int warranty)
+    {
+        WarrantyInDays = warranty;
     }
 
     //public IResult<Product> UpdateDetails(string englishName, string arabicName, string modelNumber, string? description)
@@ -122,7 +129,7 @@ public class Product : Entity, IAggregateRoot
                 .WithError(SharedResourcesKeys.ProductInstanceDuplicate.Localize())
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        var productInstanceResult = ProductInstance.Create(Id, 0, 0, sellingPrice, attributeValuesIds);
+        var productInstanceResult = ProductInstance.Create(Id, newProductInstanceSku, 0, 0, sellingPrice, attributeValuesIds);
         if (productInstanceResult.IsFailed)
             return productInstanceResult;
 
@@ -170,17 +177,16 @@ public class Product : Entity, IAggregateRoot
 
     private string GenerateSku(List<(int attributeId, int attributeValueId)> attributeValuesIds)
     {
-        StringBuilder sku = new StringBuilder(Id.ToString() + "-");
+        var sku = new StringBuilder(Id.ToString() + "-");
 
         var orderedAttributes = attributeValuesIds
             .OrderBy(a => a.attributeId);
 
         foreach (var attr in orderedAttributes)
         {
-            sku.Append($"{attr.attributeId}{attr.attributeValueId}-");
+            sku.Append($"{attr.attributeId}:{attr.attributeValueId}-");
         }
 
-        // Remove the trailing '-' if it exists
         if (sku.Length > 0 && sku[sku.Length - 1] == '-')
         {
             sku.Length--;
@@ -201,11 +207,39 @@ public class Product : Entity, IAggregateRoot
     private bool IsProductInstanceNotUnique(string newProductInstanceSku, int productInstanceId)
     {
         var existingProductInstanceSkus = ProductInstances.Select(x => new { x.Sku, x.Id });
-        return existingProductInstanceSkus.Any(x => x.Sku == newProductInstanceSku && x.Id == productInstanceId);
+        return existingProductInstanceSkus.Any(x => x.Sku == newProductInstanceSku && x.Id != productInstanceId);
     }
 
     private bool IsAttributeValuesIdsListUnique(List<(int attributeId, int attributeValueId)> attributeValuesIds)
     {
         return attributeValuesIds.DistinctBy(x => x.attributeId).Count() == attributeValuesIds.Count;
     }
+
+    //public (int AttributeId, int AttributeValueId)? GetFirstUniqueCombination(string targetSku, List<string> skuList)
+    //{
+    //    var targetAttributes = ParseAttributes(targetSku);
+    //    var skuAttributes = ProductInstances.Select(x => x.Sku).Select(ParseAttributes).ToList();
+
+    //    foreach (var (key, value) in targetAttributes)
+    //    {
+    //        if (skuAttributes.All(attrs => !attrs.TryGetValue(key, out var v) || v != value))
+    //        {
+    //            return (key , value);
+    //        }
+    //    }
+
+    //    return null;
+    //}
+
+    //private static Dictionary<int, int> ParseAttributes(string sku)
+    //{
+    //    return sku.Split('-')
+    //        .Skip(1)
+    //        .Select(part => part.Split(':'))
+    //        .Where(split => split.Length == 2)
+    //        .ToDictionary(
+    //            split => int.Parse(split[0]),
+    //            split => int.Parse(split[1])
+    //        );
+    //}
 }

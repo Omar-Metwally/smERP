@@ -17,7 +17,7 @@ public class ProcurementTransaction : ExternalEntityInventoryTransaction
     }
     private ProcurementTransaction() { }
 
-    public static IResult<ProcurementTransaction> Create(int storageLocationId, int supplierId, List<(decimal PayedAmount, string PaymentMethod)>? payments, List<(int ProductInstanceId, int Quantity, decimal UnitPrice)> transactionItems, DateTime? transactionDate = null)
+    public static IResult<ProcurementTransaction> Create(int storageLocationId, int supplierId, List<(decimal PayedAmount, string PaymentMethod)>? payments, List<(int ProductInstanceId, int Quantity, decimal UnitPrice, bool IsTracked, List<string>? SerialNumbers)> transactionItems, DateTime? transactionDate = null)
     {
         var baseDetailsCreateResult = Create(payments, transactionItems);
         if (baseDetailsCreateResult.IsFailed)
@@ -28,7 +28,9 @@ public class ProcurementTransaction : ExternalEntityInventoryTransaction
                 .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.Supplier.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        return new Result<ProcurementTransaction>(new ProcurementTransaction(storageLocationId, supplierId, transactionDate??DateTime.UtcNow, baseDetailsCreateResult.Value.Item1, baseDetailsCreateResult.Value.Item2));
+        var newProcurementTransaction = new ProcurementTransaction(storageLocationId, supplierId, transactionDate ?? DateTime.UtcNow, baseDetailsCreateResult.Value.Item1, baseDetailsCreateResult.Value.Item2);
+
+        return new Result<ProcurementTransaction>(newProcurementTransaction);
     }
 
     public void UpdateSupplier(int supplierId)

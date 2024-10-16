@@ -409,4 +409,25 @@
   <data name="PaymentTransaction" xml:space="preserve">
     <value>Payment Transaction</value>
   </data>
+  <data name="ThereSomeThingWrongWithImageProvided" xml:space="preserve">
+    <value>There An Error With The Image Uploaded</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Invalid___" xml:space="preserve">
+    <value>Invalid {0}</value>
+  </data>
+  <data name="FileSizeExceedsTheMaximumAllowedSizeOf___MB" xml:space="preserve">
+    <value>File Size Exceeds The Maximum Allowed Size Of {0} MB</value>
+  </data>
+  <data name="AccountDisabledContactAdmin" xml:space="preserve">
+    <value>This account is disabled, contact admin</value>
+  </data>
+  <data name="ProductInstanceMustHaveAtleastOneImage" xml:space="preserve">
+    <value>Produc tInstance Must Have Atleast One Image</value>
+  </data>
+  <data name="FileWasNotDeletedPleaseTryAgainLater" xml:space="preserve">
+    <value>File Was Not Deleted Please Try Again Later</value>
+  </data>
 </root>

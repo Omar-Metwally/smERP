@@ -3,12 +3,14 @@ using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
 using smERP.Application.Behaviors;
 using System.Reflection;
+using smERP.Application.Helpers;
+using Microsoft.Extensions.Configuration;
 
 namespace smERP.Application;
 
 public static class ApplicationDependencies
 {
-    public static IServiceCollection AddApplicationDependencies(this IServiceCollection services)
+    public static IServiceCollection AddApplicationDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMediatR(cfg =>
         {
@@ -20,6 +22,7 @@ public static class ApplicationDependencies
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestLoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
+        services.AddSingleton(new FileEncryptionHelper(configuration));
 
         return services;
     }

@@ -7,6 +7,7 @@ using System.Globalization;
 using Serilog;
 using smERP.WebApi.Middleware;
 using smERP.Infrastructure;
+using Microsoft.Extensions.FileProviders;
 
 namespace smERP.WebApi;
 
@@ -42,7 +43,7 @@ public class Program
 
         builder.Services.AddAuthentication();
 
-        builder.Services.AddApplicationDependencies()
+        builder.Services.AddApplicationDependencies(builder.Configuration)
                         .AddInfrastructureDependencies(builder.Configuration)
                         .AddPersistenceDependencies(builder.Configuration);
 
@@ -56,6 +57,8 @@ public class Program
             options.SupportedCultures = supportedCultures;
             options.SupportedUICultures = supportedCultures;
         });
+
+        builder.Services.AddCors();
 
         var app = builder.Build();
 
@@ -80,6 +83,23 @@ public class Program
 
         app.UseAuthorization();
 
+        // Add static file middleware
+        app.UseStaticFiles(); // This allows serving static files from the wwwroot folder
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(builder.Environment.ContentRootPath, "FileStorage")),
+            RequestPath = "/FileStorage"
+        });
+
+
+        app.UseCors(x => x
+            .SetIsOriginAllowed(origin => true)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithExposedHeaders("Location")
+            .AllowCredentials());
 
         app.MapControllers();
 

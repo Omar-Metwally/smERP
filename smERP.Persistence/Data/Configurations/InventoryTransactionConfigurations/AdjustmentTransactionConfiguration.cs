@@ -20,6 +20,11 @@ public class AdjustmentTransactionConfiguration : IEntityTypeConfiguration<Adjus
         {
             w.WithOwner().HasForeignKey(x => x.TransactionId);
             w.HasKey(x => new { x.TransactionId, x.Id });
+            w.OwnsMany(y => y.InventoryTransactionItemUnits, k =>
+            {
+                k.WithOwner().HasForeignKey(z => new { z.TransactionId, z.TransactionItemId });
+                k.HasKey(z => z.Id);
+            });
         });
     }
 }

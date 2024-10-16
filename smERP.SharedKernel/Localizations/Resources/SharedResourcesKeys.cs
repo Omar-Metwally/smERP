@@ -18,6 +18,8 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string Success = "Success";
         
         public const string ___MustBeAPositiveNumber = "___MustBeAPositiveNumber";
+        public const string Invalid___ = "Invalid___";
+        public const string FileSizeExceedsTheMaximumAllowedSizeOf___MB = "FileSizeExceedsTheMaximumAllowedSizeOf___MB";
         public const string ___MustBeBetween_And_ = "___MustBeBetween_And_";
         public const string ___ListMustContainAtleastOneItem = "___ListMustContainAtleastOneItem";
         public const string ___ListCannotContainDuplicates = "___ListCannotContainDuplicates";
@@ -28,6 +30,7 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string NotData = "NotData";
 
         public const string User = "User";
+        public const string AccountDisabledContactAdmin = "AccountDisabledContactAdmin";
         public const string Role = "Role";
         public const string Claim = "Claim";
         public const string UnAuthorized = "UnAuthorized";
@@ -48,6 +51,7 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string IsNotExist = "IsNotExist";
         public const string EmailIsExist = "EmailIsExist";
         public const string Email = "Email";
+        public const string Image = "Image";
 
         public const string PasswordNotEqualConfirmPass = "PasswordNotEqualConfirmPass";
         public const string PasswordOrEmailNotCorrect = "PasswordOrEmailNotCorrect";
@@ -82,6 +86,9 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string PaymentTransaction = "PaymentTransaction";
         public const string SerialNumber = "SerialNumber";
         public const string PhoneNumber = "PhoneNumber";
+        public const string ThereSomeThingWrongWithImageProvided = "ThereSomeThingWrongWithImageProvided";
+        public const string ProductInstanceMustHaveAtleastOneImage = "ProductInstanceMustHaveAtleastOneImage";
+        public const string FileWasNotDeletedPleaseTryAgainLater = "FileWasNotDeletedPleaseTryAgainLater";
 
         public const string AttributeList = "AttributeList";
         public const string Price = "Price";

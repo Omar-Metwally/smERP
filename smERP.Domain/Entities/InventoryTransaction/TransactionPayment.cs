@@ -26,7 +26,7 @@ public class TransactionPayment : Entity
                 .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.PayedAmount.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        if (!string.IsNullOrEmpty(paymentMethod))
+        if (string.IsNullOrEmpty(paymentMethod))
             return new Result<TransactionPayment>()
                 .WithError(SharedResourcesKeys.Required_FieldName.Localize(SharedResourcesKeys.PaymentMethod.Localize()))
                 .WithStatusCode(HttpStatusCode.BadRequest);

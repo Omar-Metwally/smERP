@@ -15,4 +15,4 @@ public record Address(
     string State, 
     string Country, 
     string PostalCode, 
-    string? Comment);
+    string Comment);

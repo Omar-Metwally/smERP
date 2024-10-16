@@ -11,7 +11,31 @@ namespace smERP.WebApi.Controllers;
 public class CategoriesController : AppControllerBase
 {
     [HttpGet("{request.CategoryId}")]
-    public async Task<IActionResult> GetById([FromRoute] GetCategoryByIdQuery request)
+    public async Task<IActionResult> GetById([FromRoute] GetCategoryQuery request)
+    {
+        var response = await Mediator.Send(request);
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpGet("Parent")]
+    public async Task<IActionResult> GetParentCategories()
+    {
+        var response = await Mediator.Send(new GetParentCategoriesQuery());
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpGet("Product")]
+    public async Task<IActionResult> GetProductCategories()
+    {
+        var response = await Mediator.Send(new GetProductCategoriesQuery());
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetPaginatedCategories([FromQuery] GetPaginatedCategoriesQuery request)
     {
         var response = await Mediator.Send(request);
         var apiResult = response.ToApiResult();

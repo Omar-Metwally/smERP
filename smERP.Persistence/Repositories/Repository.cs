@@ -4,6 +4,7 @@ using smERP.Application.Contracts.Persistence;
 using smERP.Persistence.Data;
 using smERP.SharedKernel.Bases;
 using System.Linq.Expressions;
+using smERP.SharedKernel.Responses;
 
 namespace smERP.Persistence.Repositories;
 
@@ -24,6 +25,11 @@ public class Repository<TEntity>(DbContext context) : IRepository<TEntity> where
     public async Task<IEnumerable<TEntity>> GetAll()
     {
         return await _context.Set<TEntity>().ToListAsync();
+    }
+
+    public virtual async Task<PagedResult<TEntity>> GetPagedAsync(PaginationParameters parameters)
+    {
+        return await _context.Set<TEntity>().AsQueryable().ToPagedResultAsync(parameters);
     }
 
     public IQueryable<TEntity> FilterData(Func<IQueryable<TEntity>, IQueryable<TEntity>> filterFunc, BaseFiltration parameters)
@@ -97,6 +103,28 @@ public class Repository<TEntity>(DbContext context) : IRepository<TEntity> where
     public void Remove(TEntity entity)
     {
         _context.Set<TEntity>().Remove(entity);
+    }
+
+    public async Task<IEnumerable<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> criteria, int? take, int? skip,
+    Expression<Func<TEntity, object>> orderBy = null, string orderByDirection = "asc")
+    {
+        IQueryable<TEntity> query = _context.Set<TEntity>().Where(criteria);
+
+        if (take.HasValue)
+            query = query.Take(take.Value);
+
+        if (skip.HasValue)
+            query = query.Skip(skip.Value);
+
+        if (orderBy != null)
+        {
+            if (orderByDirection == "asc")
+                query = query.OrderBy(orderBy);
+            else
+                query = query.OrderByDescending(orderBy);
+        }
+
+        return await query.ToListAsync();
     }
 }
 

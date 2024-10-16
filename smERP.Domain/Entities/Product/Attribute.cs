@@ -72,7 +72,7 @@ public class Attribute : Entity, IAggregateRoot
             .WithMessage(SharedResourcesKeys.Created.Localize());
     }
 
-    public IResult<AttributeValue> UpdateAttributeValue(int AttributeValueId, string englishValue, string arabicValue)
+    public IResult<AttributeValue> UpdateAttributeValue(int AttributeValueId, string? englishValue, string? arabicValue)
     {
         var attributeValueToBeEdited = AttributeValues.FirstOrDefault(x => x.AttributeId == Id && x.Id == AttributeValueId);
         if (attributeValueToBeEdited == null)

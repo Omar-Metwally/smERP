@@ -139,6 +139,11 @@ public class ProductCommandHandler(
             productToBeEdited.UpdateShelfLife(request.ShelfLifeInDays.Value);
         }
 
+        if (request.WarrantyInDays.HasValue && request.WarrantyInDays.Value > 0)
+        {
+            productToBeEdited.UpdateWarranty(request.WarrantyInDays.Value);
+        }
+
         _productRepository.Update(productToBeEdited);
 
         var productToBeEditedResult = await new Result<Product>()

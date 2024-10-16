@@ -1,4 +1,5 @@
 ﻿
+using smERP.Domain.ValueObjects;
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
@@ -14,24 +15,37 @@ public class ProductInstance : Entity, IAggregateRoot
     public int QuantityInStock { get; private set; }
     public decimal BuyingPrice { get; private set; }
     public decimal SellingPrice { get; private set; }
+    //public int FirstUniqueAttributeId { get; private set; }
+    //public int FirstUniqueAttributeValueId { get; private set; }
     public virtual Product Product { get; private set; } = null!;
-    //public virtual ICollection<ProductInstanceAttribute> ProductInstanceAttributes { get; } = new List<ProductInstanceAttribute>();
-    //public virtual ICollection<AttributeValue> ProductInstanceAttributeValues { get; } = new List<AttributeValue>();
+    public virtual ICollection<Image> Images { get; private set; } = new List<Image>();
     public virtual ICollection<ProductInstanceAttributeValue> ProductInstanceAttributeValues { get; private set; } = new List<ProductInstanceAttributeValue>();
 
 
-    private ProductInstance(int productId, int quantityInStock, decimal buyingPrice, decimal sellingPrice, List<ProductInstanceAttributeValue> productInstanceAttributeValues)
+    //private ProductInstance(int productId, int quantityInStock, decimal buyingPrice, decimal sellingPrice, List<ProductInstanceAttributeValue> productInstanceAttributeValues)
+    //{
+    //    ProductId = productId;
+    //    QuantityInStock = quantityInStock;
+    //    BuyingPrice = buyingPrice;
+    //    SellingPrice = sellingPrice;
+    //    ProductInstanceAttributeValues = productInstanceAttributeValues;
+    //}
+
+    private ProductInstance(int productId, string sku, int quantityInStock, decimal buyingPrice, decimal sellingPrice, List<ProductInstanceAttributeValue> productInstanceAttributeValues)
     {
         ProductId = productId;
+        Sku = sku;
         QuantityInStock = quantityInStock;
         BuyingPrice = buyingPrice;
         SellingPrice = sellingPrice;
+        //FirstUniqueAttributeId = firstUniqueAttributeId;
+        //FirstUniqueAttributeValueId = firstUniqueAttributeValueId;
         ProductInstanceAttributeValues = productInstanceAttributeValues;
     }
 
     private ProductInstance() { }
 
-    public static IResult<ProductInstance> Create(int productId, int quantityInStock, decimal buyingPrice, decimal sellingPrice, List<(int AttributeId, int AttributeValueId)> attributeValuesIds)
+    internal static IResult<ProductInstance> Create(int productId, string sku, int quantityInStock, decimal buyingPrice, decimal sellingPrice, List<(int AttributeId, int AttributeValueId)> attributeValuesIds)
     {
         if (quantityInStock < 0)
             return new Result<ProductInstance>()
@@ -50,7 +64,7 @@ public class ProductInstance : Entity, IAggregateRoot
 
         var attributeValues = attributeValuesIds.Select(x => new ProductInstanceAttributeValue(x.AttributeId, x.AttributeValueId)).ToList();
 
-        var productInstance = new ProductInstance(productId, quantityInStock, buyingPrice, sellingPrice, attributeValues);
+        var productInstance = new ProductInstance(productId, sku, quantityInStock, buyingPrice, sellingPrice, attributeValues);
         return new Result<ProductInstance>(productInstance)
             .WithStatusCode(HttpStatusCode.Created)
             .WithMessage(SharedResourcesKeys.Created.Localize());
@@ -101,6 +115,45 @@ public class ProductInstance : Entity, IAggregateRoot
         return new Result<ProductInstance>(this)
             .WithStatusCode(HttpStatusCode.NoContent)
             .WithMessage(SharedResourcesKeys.UpdatedSuccess.Localize());
+    }
+
+
+    public void AddImages(List<Image> images)
+    {
+        foreach (var image in images)
+        {
+            Images.Add(image);
+        }
+    }
+
+    public IResultBase UpdateImages(List<Image> images)
+    {
+        foreach (var image in images)
+        {
+            var imageToUpdate = Images.FirstOrDefault(x => x.Path == image.Path);
+            if (imageToUpdate is null)
+                return new Result<List<Image>>()
+                    .WithBadRequestResult(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Image.Localize()));
+
+            imageToUpdate = image;
+        }
+
+        return new Result<List<Image>>();
+    }
+
+    public IResultBase RemoveImages(List<string> imagePaths)
+    {
+        foreach (var path in imagePaths)
+        {
+            var imageToRemove = Images.FirstOrDefault(x => x.Path == path);
+            if (imageToRemove is null)
+                return new Result<List<Image>>()
+                    .WithBadRequestResult(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Image.Localize()));
+
+            Images.Remove(imageToRemove);
+        }
+
+        return new Result<List<Image>>();
     }
 
     //public IResult<ProductInstanceAttribute> AddAttribute(int attributeValueId)

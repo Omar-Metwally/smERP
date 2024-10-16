@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using smERP.Application.Contracts.Persistence;
 using smERP.Persistence.Data;
+using smERP.Persistence.Managers;
 using smERP.Persistence.Repositories;
 
 namespace smERP.Persistence;
@@ -20,6 +21,8 @@ public static class PersistenceDependencies
           b => b.MigrationsAssembly(typeof(ProductDbContext).Assembly.FullName))
           .EnableSensitiveDataLogging());
 
+        var root = Path.Combine(Directory.GetCurrentDirectory(), "FileStorage");
+
         services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
         services.AddTransient<IUnitOfWork, UnitOfWork>()
                 .AddTransient<ICompanyRepository, CompanyRepository>()
@@ -30,7 +33,9 @@ public static class PersistenceDependencies
                 .AddTransient<ISupplierRepository, SupplierRepository>()
                 .AddTransient<IBranchRepository, BranchRepository>()
                 .AddTransient<IProcurementTransactionRepository, ProcurementTransactionRepository>()
-                .AddTransient<IStorageLocationRepository, StorageLocationRepository>();
+                .AddTransient<IStorageLocationRepository, StorageLocationRepository>()
+                .AddTransient<IFileStorageRepository, FileStorageRepository>()
+                .AddSingleton(new FileStorageManager(root));
 
         return services;
     }

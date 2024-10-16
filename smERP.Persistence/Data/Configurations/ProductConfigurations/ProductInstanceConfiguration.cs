@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using smERP.Domain.Entities.Product;
+using smERP.Domain.ValueObjects;
+using File = smERP.Domain.ValueObjects.File;
 
 namespace smERP.Persistence.Data.Configurations.ProductConfigurations;
 
@@ -10,6 +12,16 @@ public class ProductInstanceConfiguration : IEntityTypeConfiguration<ProductInst
     {
         //builder.HasMany(x => x.ProductInstanceAttributeValues).WithMany(x => x.ProductInstances);
         builder.HasIndex(x => x.Sku).IsClustered(false).IsUnique(true);
+
+        builder.OwnsMany(x => x.Images, w =>
+        {
+            w.Property(x => x.Path).HasConversion(
+                v => v,
+                v => Image.Create(v).Path
+            ); 
+            w.WithOwner().HasForeignKey();
+            w.HasKey(x => x.Path);
+        });
 
         builder.OwnsMany(x => x.ProductInstanceAttributeValues, w =>
         {

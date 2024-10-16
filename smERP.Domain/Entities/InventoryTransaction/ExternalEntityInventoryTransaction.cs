@@ -21,7 +21,7 @@ public abstract class ExternalEntityInventoryTransaction : InventoryTransaction
 
     protected ExternalEntityInventoryTransaction() { }
 
-    protected static IResult<(List<TransactionPayment>, List<InventoryTransactionItem>)> Create(List<(decimal PayedAmount, string PaymentMethod)>? payments,List<(int ProductInstanceId, int Quantity, decimal UnitPrice)> transactionItems)
+    protected static IResult<(List<TransactionPayment>, List<InventoryTransactionItem>)> Create(List<(decimal PayedAmount, string PaymentMethod)>? payments,List<(int ProductInstanceId, int Quantity, decimal UnitPrice, bool IsTracked, List<string>? SerialNumbers)> transactionItems)
     {
         var baseDetailsCreateResult = CreateBaseDetails(transactionItems);
         if (baseDetailsCreateResult.IsFailed)
@@ -44,22 +44,10 @@ public abstract class ExternalEntityInventoryTransaction : InventoryTransaction
         return new Result<(List<TransactionPayment>, List<InventoryTransactionItem>)>((transactionPayment, baseDetailsCreateResult.Value));
     }
 
-    public IResult<List<TransactionPayment>> UpdateTransactionPayment(List<(int TransactionPaymentId, decimal PayedAmount, string PaymentMethod)> payments)
+    public IResult<List<TransactionPayment>> AddTransactionPayments(List<(decimal PayedAmount, string PaymentMethod)> newPayments)
     {
-        foreach (var (transactionPaymentId, payedAmount, paymentMethod) in payments)
+        foreach (var (payedAmount, paymentMethod) in newPayments)
         {
-            var existingTransactionPayment = Payments.FirstOrDefault(x => x.Id == transactionPaymentId);
-            if (existingTransactionPayment != null)
-            {
-                var updateResult = existingTransactionPayment.Update(payedAmount, paymentMethod);
-                if (updateResult.IsFailed)
-                    return new Result<List<TransactionPayment>>()
-                        .WithErrors(updateResult.Errors)
-                        .WithStatusCode(HttpStatusCode.BadRequest);
-
-                continue;
-            }
-
             var newTransactionPayment = TransactionPayment.Create(payedAmount, paymentMethod);
             if (newTransactionPayment.IsFailed)
                 return new Result<List<TransactionPayment>>()
@@ -74,19 +62,56 @@ public abstract class ExternalEntityInventoryTransaction : InventoryTransaction
         return new Result<List<TransactionPayment>>(Payments.ToList());
     }
 
-    public IResult<TransactionPayment> RemoveTransactionPayment(int transactionPaymentId)
+    public IResult<List<TransactionPayment>> UpdateTransactionPayments(List<(int TransactionPaymentId, decimal PayedAmount, string PaymentMethod)> payments)
     {
-        var transactionPaymentToBeRemoved = Payments.FirstOrDefault(x => x.Id == transactionPaymentId);
-        if (transactionPaymentToBeRemoved == null)
-            return new Result<TransactionPayment>()
-                .WithError(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.PaymentTransaction))
-                .WithStatusCode(HttpStatusCode.BadRequest);
+        foreach (var (transactionPaymentId, payedAmount, paymentMethod) in payments)
+        {
+            var existingTransactionPayment = Payments.FirstOrDefault(x => x.Id == transactionPaymentId);
+            if (existingTransactionPayment != null)
+            {
+                var updateResult = existingTransactionPayment.Update(payedAmount, paymentMethod);
+                if (updateResult.IsFailed)
+                    return new Result<List<TransactionPayment>>()
+                        .WithErrors(updateResult.Errors)
+                        .WithStatusCode(HttpStatusCode.BadRequest);
+            }
+            else
+            {
+                var newTransactionPayment = TransactionPayment.Create(payedAmount, paymentMethod);
+                if (newTransactionPayment.IsFailed)
+                    return new Result<List<TransactionPayment>>()
+                        .WithErrors(newTransactionPayment.Errors)
+                        .WithStatusCode(HttpStatusCode.BadRequest);
 
-        Payments.Remove(transactionPaymentToBeRemoved);
+                Payments.Add(newTransactionPayment.Value);
+            }
+        }
 
         RecalculateAmountLeftToPay();
 
-        return new Result<TransactionPayment>();
+        return new Result<List<TransactionPayment>>(Payments.ToList());
+    }
+
+    public IResult<List<TransactionPayment>> RemoveTransactionPayments(List<int> transactionPaymentIds)
+    {
+        if (transactionPaymentIds.Distinct().Count() != transactionPaymentIds.Count)
+            return new Result<List<TransactionPayment>>()
+                .WithBadRequestResult(SharedResourcesKeys.___ListCannotContainDuplicates.Localize(SharedResourcesKeys.PaymentTransaction.Localize()));
+
+        var transactionPaymentsToBeRemoved = Payments.Where(x => transactionPaymentIds.Contains(x.Id)).ToList();
+
+        if (transactionPaymentsToBeRemoved.Count != transactionPaymentIds.Count)
+            return new Result<List<TransactionPayment>>()
+                .WithBadRequestResult(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.PaymentTransaction.Localize()));
+
+        foreach (var payment in transactionPaymentsToBeRemoved)
+        {
+            Payments.Remove(payment);
+        }
+
+        RecalculateAmountLeftToPay();
+
+        return new Result<List<TransactionPayment>>();
     }
 
     protected void RecalculateAmountLeftToPay()

@@ -37,10 +37,14 @@ public class AttributeCommandHandler(IAttributeRepository attributeRepository, I
         if (attributeToBeCreated.IsFailed)
             return attributeToBeCreated;
 
-        await attributeToBeCreated
-            .WithTask(() => _attributeRepository.Add(attributeToBeCreated.Value, cancellationToken), SharedResourcesKeys.DatabaseError);
-        if (attributeToBeCreated.IsFailed)
-            return attributeToBeCreated;
+        foreach (var attributeValue in request.Values)
+        {
+            var addAttributeValueResult = attributeToBeCreated.Value.AddAttributeValue(attributeValue.EnglishName, attributeValue.ArabicName);
+            if (addAttributeValueResult.IsFailed)
+                return addAttributeValueResult;
+        }
+
+        await _attributeRepository.Add(attributeToBeCreated.Value, cancellationToken);
 
         await attributeToBeCreated
             .WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
@@ -48,7 +52,6 @@ public class AttributeCommandHandler(IAttributeRepository attributeRepository, I
             return attributeToBeCreated;
 
         return attributeToBeCreated.ChangeType(attributeToBeCreated.Value.Id).WithCreated();
-
     }
 
     public async Task<IResultBase> Handle(EditAttributeCommandModel request, CancellationToken cancellationToken)
@@ -76,6 +79,26 @@ public class AttributeCommandHandler(IAttributeRepository attributeRepository, I
                     .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.NameAr.Localize()));
 
             attributeToBeEdited.Name.UpdateArabic(request.ArabicName);
+        }
+
+        if (request.ValuesToAdd != null && request.ValuesToAdd.Count > 0)
+        {
+            foreach (var value in request.ValuesToAdd)
+            {
+                var addResult = attributeToBeEdited.AddAttributeValue(value.EnglishName, value.ArabicName);
+                if (addResult.IsFailed)
+                    return addResult;
+            }
+        }
+
+        if (request.ValuesToEdit != null && request.ValuesToEdit.Count > 0)
+        {
+            foreach (var value in request.ValuesToEdit)
+            {
+                var editResult = attributeToBeEdited.UpdateAttributeValue(value.AttributeValueId, value.EnglishName, value.ArabicName);
+                if (editResult.IsFailed)
+                    return editResult;
+            }
         }
 
         _attributeRepository.Update(attributeToBeEdited);

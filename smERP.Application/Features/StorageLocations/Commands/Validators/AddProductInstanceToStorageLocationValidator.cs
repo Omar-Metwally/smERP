@@ -23,12 +23,12 @@ public class AddProductInstanceToStorageLocationValidator :AbstractValidator<Add
                 .GreaterThan(0)
                 .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()));
 
-            product.RuleFor(p => p.Items.Count)
+            product.RuleFor(p => p.Units.Count)
                 .Equal(p => p.Quantity)
-                .When(p => p.Items != null)
+                .When(p => p.Units != null)
                 .WithMessage(SharedResourcesKeys.SomeItemsIn___ListAreNotCorrect.Localize(SharedResourcesKeys.Product.Localize()));
 
-            product.RuleForEach(p => p.Items)
+            product.RuleForEach(p => p.Units)
             .ChildRules(item =>
             {
                 item.RuleFor(i => i.SerialNumber)
@@ -40,7 +40,7 @@ public class AddProductInstanceToStorageLocationValidator :AbstractValidator<Add
                     .When(i => i.ExpirationDate.HasValue)
                     .WithMessage(SharedResourcesKeys.ExpirationDateMustBeInTheFuture.Localize());
             })
-            .When(p => p.Items != null);
+            .When(p => p.Units != null);
         });
     }
 }

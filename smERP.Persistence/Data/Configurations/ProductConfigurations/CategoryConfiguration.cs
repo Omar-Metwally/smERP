@@ -24,5 +24,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
                 w.HasIndex(wt => wt.Arabic).IsClustered(false);
                 w.HasIndex(wt => wt.English).IsClustered(false);
             });
+
+        builder.ToTable(tb => tb.UseSqlOutputClause(false));
     }
 }

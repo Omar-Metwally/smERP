@@ -10,4 +10,5 @@ public record AddProductCommandModel(
     int BrandId,
     int CategoryId,
     string? Description,
-    int? ShelfLifeInDays) : IRequest<IResultBase>;
+    int? ShelfLifeInDays,
+    int? WarrantyInDays) : IRequest<IResultBase>;

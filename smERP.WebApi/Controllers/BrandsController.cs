@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using smERP.Application.Features.Branches.Queries.Models;
 using smERP.Application.Features.Brands.Commands.Models;
-using smERP.Application.Features.Categories.Queries.Models;
+using smERP.Application.Features.Brands.Queries.Models;
 
 namespace smERP.WebApi.Controllers;
 
@@ -8,13 +9,13 @@ namespace smERP.WebApi.Controllers;
 [ApiController]
 public class BrandsController : AppControllerBase
 {
-    //[HttpGet("{request.CategoryId}")]
-    //public async Task<IActionResult> GetById([FromRoute] GetBrand request)
-    //{
-    //    var response = await Mediator.Send(request);
-    //    var apiResult = response.ToApiResult();
-    //    return StatusCode(apiResult.StatusCode, apiResult);
-    //}
+    [HttpGet("List")]
+    public async Task<IActionResult> GetBrands()
+    {
+        var response = await Mediator.Send(new GetBrandsQuery());
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] AddBrandCommandModel request)
@@ -36,6 +37,22 @@ public class BrandsController : AppControllerBase
     public async Task<IActionResult> Delete([FromBody] DeleteBrandCommandModel request)
     {
         var response = await Mediator.Send(request);
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetPaginatedBrands([FromQuery] GetPaginatedBrandsQuery request)
+    {
+        var response = await Mediator.Send(request);
+        var apiResult = response.ToApiResult();
+        return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    [HttpGet("{brandId:int}")]
+    public async Task<IActionResult> GetBrandById(int brandId)
+    {
+        var response = await Mediator.Send(new GetBrandQuery(brandId));
         var apiResult = response.ToApiResult();
         return StatusCode(apiResult.StatusCode, apiResult);
     }

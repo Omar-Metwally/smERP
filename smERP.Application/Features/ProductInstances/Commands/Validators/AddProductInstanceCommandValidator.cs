@@ -7,6 +7,7 @@ namespace smERP.Application.Features.ProductInstances.Commands.Validators;
 
 public class AddProductInstanceCommandValidator : AbstractValidator<AddProductInstanceCommandModel>
 {
+    private readonly long _maxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
     public AddProductInstanceCommandValidator()
     {
         RuleFor(command => command.ProductId)
@@ -25,11 +26,17 @@ public class AddProductInstanceCommandValidator : AbstractValidator<AddProductIn
         //    .Must(MustBePositiveIfNotNull)
         //    .WithMessage(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()));
 
-        RuleFor(command => command.ProductInstanceAttributeValues)
+        RuleFor(command => command.Attributes)
             .NotEmpty()
             .WithMessage(SharedResourcesKeys.___ListMustContainAtleastOneItem.Localize(SharedResourcesKeys.AttributeList.Localize()))
             .Must(HaveUniqueAttributeIds)
             .WithMessage(SharedResourcesKeys.___ListCannotContainDuplicates.Localize(SharedResourcesKeys.AttributeList.Localize()));
+
+        RuleForEach(x => x.ImagesBase64)
+            .Must(BeValidBase64).WithMessage(SharedResourcesKeys.Invalid___.Localize(SharedResourcesKeys.Image.Localize()))
+            .Must(BeValidFileSize).WithMessage(SharedResourcesKeys.FileSizeExceedsTheMaximumAllowedSizeOf___MB.Localize("10"))
+            .When(x => x.ImagesBase64 != null && x.ImagesBase64.Count > 0);
+
     }
 
     private bool HaveUniqueAttributeIds(List<ProductInstanceAttributeValue> attributeValues)
@@ -57,5 +64,26 @@ public class AddProductInstanceCommandValidator : AbstractValidator<AddProductIn
             return true;
 
         return false;
+    }
+
+    private bool BeValidBase64(string base64String)
+    {
+        if (string.IsNullOrWhiteSpace(base64String)) return false;
+        try
+        {
+            Convert.FromBase64String(base64String.Split(",")[1]);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private bool BeValidFileSize(string base64String)
+    {
+        if (string.IsNullOrWhiteSpace(base64String)) return false;
+        long fileSizeBytes = (base64String.Length * 3) / 4;
+        return fileSizeBytes <= _maxFileSizeBytes;
     }
 }

@@ -5,7 +5,7 @@ namespace smERP.Application.Features.ProcurementTransactions.Commands.Models;
 
 public record ProductItem(string SerialNumber, DateOnly? ExpirationDate);
 
-public record ProductEntry(int ProductInstanceId, int Quantity, decimal UnitPrice, List<ProductItem>? Items);
+public record ProductEntry(int ProductInstanceId, int Quantity, decimal UnitPrice, List<ProductItem>? Units);
 
 public record Payment(decimal PayedAmount, string PaymentMethod);
 

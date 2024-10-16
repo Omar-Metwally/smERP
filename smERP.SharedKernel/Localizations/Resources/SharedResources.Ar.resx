@@ -405,4 +405,25 @@
   <data name="PaymentTransaction" xml:space="preserve">
     <value>عملية الدفع</value>
   </data>
+  <data name="ThereSomeThingWrongWithImageProvided" xml:space="preserve">
+    <value>يوجد خطا بالصورة المرفوعة</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>صورة</value>
+  </data>
+  <data name="Invalid___" xml:space="preserve">
+    <value>{0} خاطئة</value>
+  </data>
+  <data name="FileSizeExceedsTheMaximumAllowedSizeOf___MB" xml:space="preserve">
+    <value>حجم الملف يتعدي الحد المسموح به {0} ميجا بايت</value>
+  </data>
+  <data name="AccountDisabledContactAdmin" xml:space="preserve">
+    <value>هذا الحساب مغلق تواصل مع ادمن</value>
+  </data>
+  <data name="ProductInstanceMustHaveAtleastOneImage" xml:space="preserve">
+    <value>المنتج يجب ان يحتوي علي صورة علي الاقل</value>
+  </data>
+  <data name="FileWasNotDeletedPleaseTryAgainLater" xml:space="preserve">
+    <value>حذف الملف لم يتم برجاء المحاولة لاحقا</value>
+  </data>
 </root>
