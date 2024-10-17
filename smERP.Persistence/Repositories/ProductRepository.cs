@@ -8,8 +8,9 @@ using smERP.SharedKernel.Responses;
 using smERP.Application.Features.Products.Queries.Models;
 using smERP.Application.Features.Products.Queries.Responses;
 using ProductInstance = smERP.Domain.Entities.Product.ProductInstance;
-using smERP.Application.Features.Brands.Queries.Responses;
+using smERP.Application.Results.Persistence;
 using System.Text;
+using GetProductInstance = smERP.Application.Results.Persistence.GetProductInstance;
 
 namespace smERP.Persistence.Repositories;
 
@@ -196,5 +197,17 @@ public class ProductRepository(ProductDbContext context) : Repository<Product>(c
                     return new GetProductsQueryResponse(item.ProductId, item.Id, sb.ToString(), item.ShelfLifeInDays, item.IsWarranted);
                 }).ToList();
             });
+    }
+
+    public async Task<GetProductInstance?> GetProductInstance(int productInstanceId)
+    {
+        return await _context.Set<ProductInstance>().AsNoTracking().Where(x => x.Id == productInstanceId)
+            .Select(instance => new GetProductInstance(instance.ProductId, instance.Id, instance.Product.WarrantyInDays.HasValue || instance.Product.ShelfLifeInDays.HasValue, instance.Product.ShelfLifeInDays))
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> DoesProductInstanceExist(int productInstanceId)
+    {
+        return await _context.Set<ProductInstance>().AnyAsync(x => x.Id == productInstanceId);
     }
 }

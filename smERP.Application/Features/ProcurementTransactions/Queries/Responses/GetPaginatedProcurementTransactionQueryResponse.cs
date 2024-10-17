@@ -7,8 +7,9 @@ public record GetPaginatedProcurementTransactionQueryResponse(
     string Supplier,
     string Branch,
     string StorageLocation,
+    decimal LeftAmount,
     DateTime TransactionDate,
-    IEnumerable<Payment> Payments,
+    IEnumerable<PaymentUpdate> Payments,
     IEnumerable<TransactionItem> Products);
 
 public record TransactionItem(int ProductInstanceId, string Name, int Quantity, decimal UnitPrice, IEnumerable<ProductUnit>? Units);

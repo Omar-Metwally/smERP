@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using smERP.Application.Features.Brands.Queries.Responses;
 using smERP.Domain.Entities.Product;
 using smERP.Application.Features.ProcurementTransactions.Commands.Models;
+using System.Linq;
 
 namespace smERP.Persistence.Repositories;
 
@@ -30,8 +31,9 @@ public class ProcurementTransactionRepository(ProductDbContext context) : Reposi
             b.Supplier.Name.English,
             b.StorageLocation.Branch.Name.English,
             b.StorageLocation.Name,
+            b.AmountLeftToPay,
             b.TransactionDate,
-            b.Payments.Select(payment => new Payment(payment.PayedAmount, payment.PaymentMethod)),
+            b.Payments.Select(payment => new PaymentUpdate(payment.Id, payment.PayedAmount, payment.PaymentMethod)),
             b.Items.Select(item => new TransactionItem(
                 item.ProductInstanceId,
                 item.ProductInstance.Product.Name.English,
@@ -104,6 +106,11 @@ public class ProcurementTransactionRepository(ProductDbContext context) : Reposi
                         ? query.OrderByDescending(b => b.StorageLocation.Branch.Name.English)
                         : query.OrderBy(b => b.StorageLocation.Branch.Name.English);
                     break;
+                case "leftamount":
+                    query = parameters.SortDescending
+                        ? query.OrderByDescending(b => b.AmountLeftToPay)
+                        : query.OrderBy(b => b.AmountLeftToPay);
+                    break;
                 case "createdat":
                     query = parameters.SortDescending
                         ? query.OrderByDescending(b => b.CreatedAt)
@@ -119,4 +126,23 @@ public class ProcurementTransactionRepository(ProductDbContext context) : Reposi
         return query;
     }
 
+    public async Task<GetProcurementTransactionPaymentQueryResponse?> GetTransactionPayment(int TransactionId, int PaymentId)
+    {
+        return await _context.Set<ProcurementTransaction>().AsNoTracking()
+            .Where(t => t.Id == TransactionId)
+            .SelectMany(t => t.Payments.Where(p => p.Id == PaymentId))
+            .Select(p => new GetProcurementTransactionPaymentQueryResponse(p.Id, p.PayedAmount, p.PaymentMethod))
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<GetProcurementTransactionProductQueryResponse?> GetTransactionProduct(int TransactionId, int ProductId)
+    {
+        return await _context.Set<ProcurementTransaction>().AsNoTracking()
+            .Where(t => t.Id == TransactionId)
+            .SelectMany(t => t.Items.Where(p => p.ProductInstanceId == ProductId))
+            .Select(item => new GetProcurementTransactionProductQueryResponse(item.ProductInstanceId, item.Quantity, item.UnitPrice, item.ProductInstance.Product.WarrantyInDays.HasValue || item.ProductInstance.Product.ShelfLifeInDays.HasValue, item.ProductInstance.Product.ShelfLifeInDays,
+                            item.InventoryTransactionItemUnits != null
+                    ? item.InventoryTransactionItemUnits.Select(unit => unit.SerialNumber)
+                    : null)).FirstOrDefaultAsync();
+    }
 }

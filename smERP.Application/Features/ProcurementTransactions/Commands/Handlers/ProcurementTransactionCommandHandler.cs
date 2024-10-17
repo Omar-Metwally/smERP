@@ -17,8 +17,13 @@ public class ProcurementTransactionCommandHandler(
     IRequestHandler<AddProcurementTransactionCommandModel, IResultBase>,
     //IRequestHandler<EditProcurementTransactionCommandModelOld, IResultBase>,
     IRequestHandler<DeleteProcurementTransactionCommandModel, IResultBase>,
-    IRequestHandler<EditProcurementTransactionCommandModel, IResultBase>
-
+    IRequestHandler<EditProcurementTransactionCommandModel, IResultBase>,
+    IRequestHandler<AddProcurementTransactionPaymentCommandModel, IResultBase>,
+    IRequestHandler<EditProcurementTransactionPaymentCommandModel, IResultBase>,
+    IRequestHandler<DeleteProcurementTransactionPaymentCommandModel, IResultBase>,
+    IRequestHandler<AddProcurementTransactionProductCommandModel, IResultBase>,
+    IRequestHandler<EditProcurementTransactionProductCommandModel, IResultBase>,
+    IRequestHandler<DeleteProcurementTransactionProductCommandModel, IResultBase>
 {
     private readonly IProcurementTransactionRepository _procurementTransactionRepository = procurementTransactionRepository;
     private readonly IBranchRepository _branchRepository = branchRepository;
@@ -247,5 +252,138 @@ public class ProcurementTransactionCommandHandler(
             return savingProcurementTransactionUpdatesResult;
 
         return savingProcurementTransactionUpdatesResult.WithUpdated();
+    }
+
+    public async Task<IResultBase> Handle(AddProcurementTransactionPaymentCommandModel request, CancellationToken cancellationToken)
+    {
+        var transaction = await _procurementTransactionRepository.GetByID(request.TransactionId);
+        if (transaction == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.ProcurementTransaction.Localize()));
+
+        var addPaymentResult = transaction.AddTransactionPayments([(request.PayedAmount, request.PaymentMethod)]);
+        if (addPaymentResult.IsFailed)
+            return addPaymentResult;
+
+        _procurementTransactionRepository.Update(transaction);
+
+        await addPaymentResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
+        if (addPaymentResult.IsFailed)
+            return addPaymentResult;
+
+        return addPaymentResult.WithCreated();
+    }
+
+    public async Task<IResultBase> Handle(EditProcurementTransactionPaymentCommandModel request, CancellationToken cancellationToken)
+    {
+        var transaction = await _procurementTransactionRepository.GetByID(request.TransactionId);
+        if (transaction == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.ProcurementTransaction.Localize()));
+
+        var editPaymentResult = transaction.UpdateTransactionPayments([(request.PaymentId, request.PayedAmount, request.PaymentMethod)]);
+        if (editPaymentResult.IsFailed)
+            return editPaymentResult;
+
+        _procurementTransactionRepository.Update(transaction);
+
+        await editPaymentResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
+        if (editPaymentResult.IsFailed)
+            return editPaymentResult;
+
+        return editPaymentResult.WithUpdated();
+    }
+
+    public async Task<IResultBase> Handle(DeleteProcurementTransactionPaymentCommandModel request, CancellationToken cancellationToken)
+    {
+        var transaction = await _procurementTransactionRepository.GetByID(request.TransactionId);
+        if (transaction == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.ProcurementTransaction.Localize()));
+
+        var removePaymentResult = transaction.RemoveTransactionPayments([request.PaymentId]);
+        if (removePaymentResult.IsFailed)
+            return removePaymentResult;
+
+        _procurementTransactionRepository.Update(transaction);
+
+        await removePaymentResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
+        if (removePaymentResult.IsFailed)
+            return removePaymentResult;
+
+        return removePaymentResult.WithDeleted();
+    }
+
+    public async Task<IResultBase> Handle(AddProcurementTransactionProductCommandModel request, CancellationToken cancellationToken)
+    {
+        var transaction = await _procurementTransactionRepository.GetByID(request.TransactionId);
+        if (transaction == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.ProcurementTransaction.Localize()));
+
+        var productInstance = await _productRepository.GetProductInstance(request.ProductInstanceId);
+        if (productInstance == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Product.Localize()));
+
+        var productToAdd = (productInstance.ProductInstanceId, request.Quantity, request.UnitPrice, productInstance.IsTracked,
+            request?.UnitsToAdd?.Select(unit => (unit.SerialNumber, unit.ExpirationDate)).ToList());
+
+        var addProductResult = transaction.AddItems([productToAdd]);
+        if (addProductResult.IsFailed)
+            return addProductResult;
+
+        _procurementTransactionRepository.Update(transaction);
+
+        await addProductResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
+        if (addProductResult.IsFailed)
+            return addProductResult;
+
+        return addProductResult.WithCreated();
+    }
+
+    public async Task<IResultBase> Handle(EditProcurementTransactionProductCommandModel request, CancellationToken cancellationToken)
+    {
+        var transaction = await _procurementTransactionRepository.GetByID(request.TransactionId);
+        if (transaction == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.ProcurementTransaction.Localize()));
+
+        var productInstance = await _productRepository.GetProductInstance(request.ProductInstanceId);
+        if (productInstance == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Product.Localize()));
+
+        var productToEdit = (productInstance.ProductInstanceId, request.Quantity, request.UnitPrice, productInstance.IsTracked,
+            request.UnitsToAdd?.Select(unit => (unit.SerialNumber, unit.ExpirationDate)).ToList(),
+            request.UnitToRemove?.Select(unit => unit).ToList());
+
+        var editProductResult = transaction.UpdateItems([productToEdit]);
+        if (editProductResult.IsFailed)
+            return editProductResult;
+
+        _procurementTransactionRepository.Update(transaction);
+
+        await editProductResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
+        if (editProductResult.IsFailed)
+            return editProductResult;
+
+        return editProductResult.WithUpdated();
+    }
+
+    public async Task<IResultBase> Handle(DeleteProcurementTransactionProductCommandModel request, CancellationToken cancellationToken)
+    {
+        var transaction = await _procurementTransactionRepository.GetByID(request.TransactionId);
+        if (transaction == null)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.ProcurementTransaction.Localize()));
+
+        var doesProductInstanceExist = await _productRepository.DoesProductInstanceExist(request.ProductInstanceId);
+        if (!doesProductInstanceExist)
+            return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Product.Localize()));
+
+        var removeProductResult = transaction.RemoveTransactionItems([request.ProductInstanceId]);
+        if (removeProductResult.IsFailed)
+            return removeProductResult;
+
+        _procurementTransactionRepository.Update(transaction);
+
+        await removeProductResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
+        if (removeProductResult.IsFailed)
+            return removeProductResult;
+
+        return removeProductResult.WithDeleted();
     }
 }
