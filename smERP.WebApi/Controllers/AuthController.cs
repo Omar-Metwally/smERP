@@ -23,7 +23,10 @@ public class AuthController : AppControllerBase
     {
         var response = await Mediator.Send(request);
         var apiResult = response.ToApiResult();
-        SetRefreshTokenInCookie(apiResult.Value.RefreshToken, apiResult.Value.RefreshTokenExpirationDate);
+        if (apiResult.IsSuccess)
+        {
+            SetRefreshTokenInCookie(apiResult.Value.RefreshToken, apiResult.Value.RefreshTokenExpirationDate);
+        }
         return StatusCode(apiResult.StatusCode, apiResult);
     }
 
