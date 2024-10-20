@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using smERP.Application.Features.Branches.Commands.Models;
 using smERP.Application.Features.Branches.Queries.Models;
 using smERP.Application.Features.StorageLocations.Commands.Models;
+using smERP.Domain.Entities.Organization;
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
+using smERP.SharedKernel.Responses;
 
 namespace smERP.WebApi.Controllers;
 
@@ -68,7 +70,7 @@ public class BranchesController : AppControllerBase
         return StatusCode(apiResult.StatusCode, apiResult);
     }
 
-    [HttpGet("{branchId}/storage-locations")]
+    [HttpGet("{branchId}/storage-locations/{storageLocationId}")]
     public async Task<IActionResult> GetStorageLocation(int branchId, int storageLocationId)
     {
         var response = await Mediator.Send(new GetStorageLocationQuery(branchId, storageLocationId));
@@ -76,18 +78,40 @@ public class BranchesController : AppControllerBase
         return StatusCode(apiResult.StatusCode, apiResult);
     }
 
-    [Authorize(Policy = "BranchManagerPolicy")]
-    [HttpGet("{branchId}/storage-locations/{storageLocationId}")]
-    public async Task<IActionResult> GetPaginatedStorageLocation(int branchId, int storageLocationId)
+    [Authorize(Policy = "BranchAccessPolicy")]
+    [HttpGet("{branchId}/storage-locations")]
+    public async Task<IActionResult> GetPaginatedStorageLocations(int branchId, [FromQuery] PaginationParameters request)
     {
-        var branchIdFromClaim = HttpContext.User.Claims.FirstOrDefault(x => x.ValueType == "branch")?.Value;
+    if (!HttpContext.User.IsInRole("Admin"))
+    {
+        var branchIdFromClaim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "branch")?.Value;
+
         if (branchIdFromClaim == null)
         {
-            var result = new ApiResult() { ErrorMessages = [SharedResourcesKeys.PleaseTryToLoginAgain.Localize()], IsSuccess = false, Message = SharedResourcesKeys.UnAuthorized.Localize(), StatusCode = 401 };
-            return StatusCode(result.StatusCode, result);
+            var result = new ApiResult
+            {
+                ErrorMessages = [SharedResourcesKeys.PleaseTryToLoginAgain.Localize()],
+                IsSuccess = false,
+                Message = SharedResourcesKeys.UnAuthorized.Localize(),
+                StatusCode = StatusCodes.Status401Unauthorized
+            };
+            return Unauthorized(result);
         }
 
-        var response = await Mediator.Send(new GetStorageLocationQuery(int.Parse(branchIdFromClaim), storageLocationId));
+        if (int.TryParse(branchIdFromClaim, out var claimBranchId) && claimBranchId != branchId)
+        {
+            var result = new ApiResult
+            {
+                ErrorMessages = [SharedResourcesKeys.PleaseTryToLoginAgain.Localize()],
+                IsSuccess = false,
+                Message = SharedResourcesKeys.UnAuthorized.Localize(),
+                StatusCode = StatusCodes.Status401Unauthorized
+            };
+            return Unauthorized(result);
+        }
+    }
+
+        var response = await Mediator.Send(new GetPaginatedStorageLocationsQuery(branchId, request));
         var apiResult = response.ToApiResult();
         return StatusCode(apiResult.StatusCode, apiResult);
     }

@@ -14,7 +14,8 @@ public class BranchQueryHandler(IBranchRepository branchRepository) :
     IRequestHandler<GetPaginatedBranchesQuery, IResult<PagedResult<GetPaginatedBranchesQueryResponse>>>,
     IRequestHandler<GetBranchQuery, IResult<GetBranchQueryResponse>>,
     IRequestHandler<GetStorageLocationQuery, IResult<GetStorageLocationQueryResponse>>,
-    IRequestHandler<GetBranchesWithStorageLocationsQuery, IResult<IEnumerable<GetBranchesWithStorageLocationsQueryResponse>>>
+    IRequestHandler<GetBranchesWithStorageLocationsQuery, IResult<IEnumerable<GetBranchesWithStorageLocationsQueryResponse>>>,
+    IRequestHandler<GetPaginatedStorageLocationsQuery, IResult<PagedResult<GetPaginatedStorageLocationsQueryResponse>>>
 {
     private readonly IBranchRepository _branchRepository = branchRepository;
 
@@ -57,5 +58,11 @@ public class BranchQueryHandler(IBranchRepository branchRepository) :
     public async Task<IResult<IEnumerable<GetBranchesWithStorageLocationsQueryResponse>>> Handle(GetBranchesWithStorageLocationsQuery request, CancellationToken cancellationToken)
     {
         return new Result<IEnumerable<GetBranchesWithStorageLocationsQueryResponse>>(await _branchRepository.GetBranchesWithStorageLocations());
+    }
+
+    public async Task<IResult<PagedResult<GetPaginatedStorageLocationsQueryResponse>>> Handle(GetPaginatedStorageLocationsQuery request, CancellationToken cancellationToken)
+    {
+        var result = await _branchRepository.GetPaginatedStorageLocations(request);
+        return new Result<PagedResult<GetPaginatedStorageLocationsQueryResponse>>(result);
     }
 }
