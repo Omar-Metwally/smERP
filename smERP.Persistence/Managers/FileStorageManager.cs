@@ -11,7 +11,7 @@ public class FileStorageManager
     private readonly string _baseUrl;
     private readonly Dictionary<FileType, string> _fileTypePaths;
 
-    public FileStorageManager(string basePath, string baseUrl = "http://localhost:5184")
+    public FileStorageManager(string basePath, string baseUrl = "https://smerp.runasp.net/")
     {
         _basePath = basePath;
         _baseUrl = baseUrl;

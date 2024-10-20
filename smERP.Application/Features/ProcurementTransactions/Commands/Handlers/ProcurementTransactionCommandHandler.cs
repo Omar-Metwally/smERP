@@ -5,6 +5,7 @@ using smERP.Domain.Entities.InventoryTransaction;
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
+using System.Transactions;
 
 namespace smERP.Application.Features.ProcurementTransactions.Commands.Handlers;
 
@@ -13,7 +14,8 @@ public class ProcurementTransactionCommandHandler(
     IBranchRepository branchRepository,
     IProductRepository productRepository,
     ISupplierRepository supplierRepository,
-    IUnitOfWork unitOfWork) :
+    IUnitOfWork unitOfWork,
+    IMediator mediator) :
     IRequestHandler<AddProcurementTransactionCommandModel, IResultBase>,
     //IRequestHandler<EditProcurementTransactionCommandModelOld, IResultBase>,
     IRequestHandler<DeleteProcurementTransactionCommandModel, IResultBase>,
@@ -30,6 +32,7 @@ public class ProcurementTransactionCommandHandler(
     private readonly IProductRepository _productRepository = productRepository;
     private readonly ISupplierRepository _supplierRepository = supplierRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IMediator _mediator = mediator;
 
     public async Task<IResultBase> Handle(AddProcurementTransactionCommandModel request, CancellationToken cancellationToken)
     {
@@ -79,9 +82,32 @@ public class ProcurementTransactionCommandHandler(
 
         await _procurementTransactionRepository.Add(procurementTransactionToBeCreatedResult.Value, cancellationToken);
 
+        var productEntries = request.Products.Select(x =>
+        {
+            var productInstance = productInstances.FirstOrDefault(z => z.IsTracked && z.ProductInstanceId == x.ProductInstanceId);
+
+            return (
+                x.ProductInstanceId,
+                x.Quantity,
+                productInstance.IsTracked,
+                productInstance.ShelfLifeInDays,
+                x.Units?.Select(item => (item.SerialNumber, "Available", item.ExpirationDate)).ToList()
+            );
+        }).ToList();
+
+        procurementTransactionToBeCreatedResult.Value.RaiseTransactionCreatedEvent(productEntries);
+
+        foreach (var domainEvent in procurementTransactionToBeCreatedResult.Value.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        procurementTransactionToBeCreatedResult.Value.ClearEvents();
+
         await procurementTransactionToBeCreatedResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (procurementTransactionToBeCreatedResult.IsFailed)
             return procurementTransactionToBeCreatedResult;
+
 
         return procurementTransactionToBeCreatedResult.ChangeType(procurementTransactionToBeCreatedResult.Value.Id).WithCreated();
     }
@@ -194,6 +220,7 @@ public class ProcurementTransactionCommandHandler(
                     x.Quantity,
                     x.UnitPrice,
                     productInstance.IsTracked,
+                    productInstance.ShelfLifeInDays,
                     x.UnitUpdates?.ToAdd?.Select(unitUpdate => (unitUpdate.SerialNumber, unitUpdate.ExpirationDate)).ToList(),
                     x.UnitUpdates?.ToRemove?.ToList()
                 );
@@ -215,6 +242,7 @@ public class ProcurementTransactionCommandHandler(
                     x.Quantity,
                     x.UnitPrice,
                     productInstance.IsTracked,
+                    productInstance.ShelfLifeInDays,
                     x.Units?.Select(unit => (unit.SerialNumber, unit.ExpirationDate)).ToList()
                 );
             }).ToList();
@@ -247,6 +275,13 @@ public class ProcurementTransactionCommandHandler(
 
         _procurementTransactionRepository.Update(procurementTransactionToBeEdited);
 
+        foreach (var domainEvent in procurementTransactionToBeEdited.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        procurementTransactionToBeEdited.ClearEvents();
+
         var savingProcurementTransactionUpdatesResult = await new Result<ProcurementTransaction>().WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (savingProcurementTransactionUpdatesResult.IsFailed)
             return savingProcurementTransactionUpdatesResult;
@@ -265,6 +300,13 @@ public class ProcurementTransactionCommandHandler(
             return addPaymentResult;
 
         _procurementTransactionRepository.Update(transaction);
+
+        foreach (var domainEvent in transaction.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        transaction.ClearEvents();
 
         await addPaymentResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (addPaymentResult.IsFailed)
@@ -285,6 +327,14 @@ public class ProcurementTransactionCommandHandler(
 
         _procurementTransactionRepository.Update(transaction);
 
+
+        foreach (var domainEvent in transaction.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        transaction.ClearEvents();
+
         await editPaymentResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (editPaymentResult.IsFailed)
             return editPaymentResult;
@@ -304,6 +354,14 @@ public class ProcurementTransactionCommandHandler(
 
         _procurementTransactionRepository.Update(transaction);
 
+
+        foreach (var domainEvent in transaction.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        transaction.ClearEvents();
+
         await removePaymentResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (removePaymentResult.IsFailed)
             return removePaymentResult;
@@ -321,7 +379,7 @@ public class ProcurementTransactionCommandHandler(
         if (productInstance == null)
             return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Product.Localize()));
 
-        var productToAdd = (productInstance.ProductInstanceId, request.Quantity, request.UnitPrice, productInstance.IsTracked,
+        var productToAdd = (productInstance.ProductInstanceId, request.Quantity, request.UnitPrice, productInstance.IsTracked, productInstance.ShelfLifeInDays,
             request?.UnitsToAdd?.Select(unit => (unit.SerialNumber, unit.ExpirationDate)).ToList());
 
         var addProductResult = transaction.AddItems([productToAdd]);
@@ -329,6 +387,14 @@ public class ProcurementTransactionCommandHandler(
             return addProductResult;
 
         _procurementTransactionRepository.Update(transaction);
+
+
+        foreach (var domainEvent in transaction.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        transaction.ClearEvents();
 
         await addProductResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (addProductResult.IsFailed)
@@ -347,15 +413,23 @@ public class ProcurementTransactionCommandHandler(
         if (productInstance == null)
             return new Result<ProcurementTransaction>().WithNotFound(SharedResourcesKeys.DoesNotExist.Localize(SharedResourcesKeys.Product.Localize()));
 
-        var productToEdit = (productInstance.ProductInstanceId, request.Quantity, request.UnitPrice, productInstance.IsTracked,
+        var productToEdit = (productInstance.ProductInstanceId, request.Quantity, request.UnitPrice, productInstance.IsTracked, productInstance.ShelfLifeInDays,
             request.UnitsToAdd?.Select(unit => (unit.SerialNumber, unit.ExpirationDate)).ToList(),
-            request.UnitToRemove?.Select(unit => unit).ToList());
+            request.UnitsToRemove?.Select(unit => unit).ToList());
 
         var editProductResult = transaction.UpdateItems([productToEdit]);
         if (editProductResult.IsFailed)
             return editProductResult;
 
         _procurementTransactionRepository.Update(transaction);
+
+
+        foreach (var domainEvent in transaction.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        transaction.ClearEvents();
 
         await editProductResult.WithTask(() => _unitOfWork.SaveChangesAsync(cancellationToken), SharedResourcesKeys.DatabaseError);
         if (editProductResult.IsFailed)
@@ -377,6 +451,14 @@ public class ProcurementTransactionCommandHandler(
         var removeProductResult = transaction.RemoveTransactionItems([request.ProductInstanceId]);
         if (removeProductResult.IsFailed)
             return removeProductResult;
+
+
+        foreach (var domainEvent in transaction.Events)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        transaction.ClearEvents();
 
         _procurementTransactionRepository.Update(transaction);
 

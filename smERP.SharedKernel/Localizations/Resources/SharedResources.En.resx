@@ -430,4 +430,7 @@
   <data name="FileWasNotDeletedPleaseTryAgainLater" xml:space="preserve">
     <value>File Was Not Deleted Please Try Again Later</value>
   </data>
+  <data name="PleaseTryToLoginAgain" xml:space="preserve">
+    <value>Please Try To Login Again</value>
+  </data>
 </root>

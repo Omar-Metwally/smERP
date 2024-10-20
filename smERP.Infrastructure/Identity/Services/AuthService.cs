@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -31,12 +32,16 @@ public class AuthService(
     SignInManager<ApplicationUser> signInManager,
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole> roleManager,
-    IOptions<JwtSettings> jwtSettings) : IAuthService
+    IOptions<JwtSettings> jwtSettings,
+    ICurrentUserService currentUserService,
+    IAuthorizationService authorizationService) : IAuthService
 {
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+    private readonly ICurrentUserService _currentUserService = currentUserService;
+    private readonly IAuthorizationService _authorizationService = authorizationService;
 
     public async Task<IResult<LoginResult>> Login(LoginCommandModel<IResult<LoginResult>> request)
     {
@@ -55,8 +60,6 @@ public class AuthService(
             return new Result<LoginResult>()
                 .WithBadRequestResult(SharedResourcesKeys.AccountDisabledContactAdmin.Localize());
 
-        var result = await _signInManager.PasswordSignInAsync(user.UserName, request.Password, false, lockoutOnFailure: false);
-
         JwtSecurityToken jwtSecurityToken = await GenerateToken(user);
 
         if (!user.IsExistingRefreshTokenValid())
@@ -64,7 +67,15 @@ public class AuthService(
             user.GenerateRefreshToken();
         }
 
-        var loginResult = new LoginResult(jwtSecurityToken.ToString(), user.RefreshToken, user.RefreshTokenExpiration);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenString = tokenHandler.WriteToken(jwtSecurityToken);
+
+        var loginResult = new LoginResult
+        (
+            tokenString,
+            user.RefreshToken,
+            user.RefreshTokenExpiration
+        );
 
         return new Result<LoginResult>(loginResult);
     }
@@ -95,7 +106,7 @@ public class AuthService(
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            UserName = request.FirstName +"_"+ request.LastName,
+            UserName = request.FirstName + "_" + request.LastName,
             PhoneNumber = request.PhoneNumber,
             EmailConfirmed = true,
         };
@@ -204,8 +215,8 @@ public class AuthService(
 
         var doesClaimRoleExist = roleClaims.Any(x => x.ValueType == request.ClaimType && x.Value == request.ClaimValue);
         if (doesClaimRoleExist)
-        return new Result<string>()
-            .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.Claim.Localize()));
+            return new Result<string>()
+                .WithBadRequest(SharedResourcesKeys.DoesExist.Localize(SharedResourcesKeys.Claim.Localize()));
 
         var claimRoleToBeCreated = new Claim(request.ClaimType, request.ClaimValue);
 
@@ -235,8 +246,8 @@ public class AuthService(
 
         var userClaimToBeCreatedResult = await _userManager.AddClaimAsync(user, userClaimToBeCreated);
         if (!userClaimToBeCreatedResult.Succeeded)
-          return new Result<string>()
-                .WithBadRequest(userClaimToBeCreatedResult.Errors.Select(x => x.Description));
+            return new Result<string>()
+                  .WithBadRequest(userClaimToBeCreatedResult.Errors.Select(x => x.Description));
 
         return new Result<string>();
     }
@@ -391,15 +402,18 @@ public class AuthService(
 
         for (int i = 0; i < roles.Count; i++)
         {
-            roleClaims.Add(new Claim(ClaimTypes.Role, roles[i]));
+            roleClaims.Add(new Claim("roles", roles[i]));
         }
 
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+            new Claim("firstName", user.FirstName),
+            new Claim("lastName", user.LastName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim("uid", user.Id)
+            new Claim("uid", user.Id),
+            new Claim("branch", user.Employee.BranchId.ToString())
         }
         .Union(userClaims)
         .Union(roleClaims);
@@ -419,6 +433,8 @@ public class AuthService(
     public async Task<IResult<PagedResult<GetPaginatedUsersQueryResponse>>> GetPaginatedUsers(PaginationParameters parameters)
     {
         var query = _userManager.Users.AsQueryable();
+
+        query = await ApplyRoleBasedFilter(query);
 
         if (!string.IsNullOrEmpty(parameters.SearchTerm))
         {
@@ -460,7 +476,6 @@ public class AuthService(
             userRoles[user.Id] = roles.ToList();
         }
 
-        // Combine user data with roles
         var pagedData = pagedUsers.Select(u => new GetPaginatedUsersQueryResponse(u.Id, u.FirstName, u.LastName, u.UserName, u.Email, u.PhoneNumber, u.Employee.Address?.ToSingleLineString() ?? "Not Available", u.IsAccountDisabled, u.BranchId, userRoles[u.Id])).ToList();
 
         var pagedResult = new PagedResult<GetPaginatedUsersQueryResponse>()
@@ -484,14 +499,14 @@ public class AuthService(
         var userRoles = await _userManager.GetRolesAsync(user);
 
         var response = new GetUserQueryResponse(
-            user.Id, 
-            user.FirstName, 
-            user.LastName, 
-            user.UserName ?? "", 
-            user.Email ?? "", 
-            user.PhoneNumber ?? "", 
-            new  Application.Features.Suppliers.Commands.Models.Address(
-                user.Employee.Address?.Country ?? "", 
+            user.Id,
+            user.FirstName,
+            user.LastName,
+            user.UserName ?? "",
+            user.Email ?? "",
+            user.PhoneNumber ?? "",
+            new Application.Features.Suppliers.Commands.Models.Address(
+                user.Employee.Address?.Country ?? "",
                 user.Employee.Address?.City ?? "",
                 user.Employee.Address?.State ?? "",
                 user.Employee.Address?.Street ?? "",
@@ -554,5 +569,22 @@ public class AuthService(
             return new Result<bool>().WithBadRequestResult(updateResult.Errors.Select(e => e.Description));
 
         return new Result<bool>();
+    }
+
+    private async Task<IQueryable<ApplicationUser>> ApplyRoleBasedFilter(IQueryable<ApplicationUser> query)
+    {
+        var user = _currentUserService.User;
+
+        if ((await _authorizationService.AuthorizeAsync(user, null, "AdminPolicy")).Succeeded)
+        {
+            return query;
+        }
+        else if ((await _authorizationService.AuthorizeAsync(user, null, "BranchManagerPolicy")).Succeeded)
+        {
+            var branchId = _currentUserService.GetBranchId();
+            return query.Where(u => u.Employee.BranchId == branchId);
+        }
+
+        return query.Where(e => false);
     }
 }

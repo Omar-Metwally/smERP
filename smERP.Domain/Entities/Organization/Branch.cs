@@ -12,10 +12,8 @@ public class Branch : Entity, IAggregateRoot
 {
     public BilingualName Name { get; private set; } = null!;
     public ICollection<StorageLocation> StorageLocations { get; private set; } = null!;
-    //public string BranchManagerId { get; private set; }
-    //public int CompanyId { get; private set; }
-    //public virtual Employee BranchManger { get; private set; }
-    //public ICollection<Employee> BranchEmployees { get; private set; }
+    public ICollection<BranchProductInstanceAlertLevel> BranchProductInstanceAlertLevels { get; private set; } = [];
+
     private Branch(BilingualName name)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -105,19 +103,65 @@ public class Branch : Entity, IAggregateRoot
         return new Result<StorageLocation>(storageLocationToBeDeleted);
     }
 
-    //public void SetBranchManager(string branchManagerId)
-    //{
-    //    if (string.IsNullOrWhiteSpace(branchManagerId))
-    //        throw new ArgumentException("Branch manager ID cannot be empty.", nameof(branchManagerId));
+    public IResult<BranchProductInstanceAlertLevel> SetProductInstanceAlertLevel(int productInstanceId, int alertLevel)
+    {
+        if (productInstanceId < 0)
+            return new Result<BranchProductInstanceAlertLevel>()
+                .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Product.Localize()))
+                .WithStatusCode(HttpStatusCode.BadRequest);
 
-    //    BranchManagerId = branchManagerId;
-    //}
+        if (alertLevel < 0)
+            return new Result<BranchProductInstanceAlertLevel>()
+                .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()))
+                .WithStatusCode(HttpStatusCode.BadRequest);
 
-    //public void AddEmployee(Employee employee)
-    //{
-    //    if (employee == null)
-    //        throw new ArgumentNullException(nameof(employee));
+        var existingAlertLevel = BranchProductInstanceAlertLevels.FirstOrDefault(x => x.ProductInstanceId == productInstanceId);
+        if (existingAlertLevel != null)
+        {
+            existingAlertLevel.AlertLevel = alertLevel;
+            return new Result<BranchProductInstanceAlertLevel>(existingAlertLevel);
+        }
 
-    //    BranchEmployees.Add(employee);
-    //}
+        var newAlertLevel = new BranchProductInstanceAlertLevel(Id, productInstanceId, alertLevel);
+        BranchProductInstanceAlertLevels.Add(newAlertLevel);
+
+        return new Result<BranchProductInstanceAlertLevel>(newAlertLevel);
+    }
+
+    public (int ProductInstanceId, bool IsLow, int CurrentLevel, int RecommendLevel) IsProductInstanceLowLevel(int productInstanceId)
+    {
+        var productInstanceAlertLevel = BranchProductInstanceAlertLevels.FirstOrDefault(x => x.ProductInstanceId == productInstanceId);
+        if (productInstanceAlertLevel == null) return (productInstanceId, false, 0, 0);
+
+        var productInstanceQuantity = StorageLocations
+            .SelectMany(sl => sl.StoredProductInstances)
+            .Where(x => x.ProductInstanceId == productInstanceId)
+            .Sum(spi => spi.Quantity);
+
+        return (productInstanceId, productInstanceAlertLevel.AlertLevel > productInstanceQuantity, productInstanceQuantity, productInstanceAlertLevel.AlertLevel);
+    }
+
+    public IEnumerable<BranchProductSummary> GetBranchProductSummaries()
+    {
+        var productSummaries = StorageLocations
+            .SelectMany(sl => sl.StoredProductInstances)
+            .GroupBy(spi => spi.ProductInstanceId)
+            .Select(group => new BranchProductSummary
+            {
+                ProductInstanceId = group.Key,
+                TotalQuantity = group.Sum(spi => spi.Quantity),
+                AlertLevel = BranchProductInstanceAlertLevels
+                    .FirstOrDefault(al => al.ProductInstanceId == group.Key)?.AlertLevel
+            })
+            .ToList();
+
+        return productSummaries;
+    }
+}
+public class BranchProductSummary
+{
+    public int ProductInstanceId { get; set; }
+    public int TotalQuantity { get; set; }
+    public int? AlertLevel { get; set; }
+    public bool IsAlertLevelReached => AlertLevel.HasValue && TotalQuantity <= AlertLevel.Value;
 }

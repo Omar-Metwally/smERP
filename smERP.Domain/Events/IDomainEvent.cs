@@ -1,5 +1,7 @@
-﻿namespace smERP.Domain.Events;
+﻿using MediatR;
 
-public interface IDomainEvent
+namespace smERP.Domain.Events;
+
+public interface IDomainEvent : INotification
 {
 }

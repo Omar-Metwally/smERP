@@ -27,4 +27,9 @@ public class ProductInstanceItem : Entity
         Status = status;
         ExpirationDate = expirationDate;
     }
+
+    internal void UpdateStatus(string status)
+    {
+        Status = status;
+    }
 }

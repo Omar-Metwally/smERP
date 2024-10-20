@@ -35,6 +35,7 @@ namespace smERP.SharedKernel.Localizations.Resources
         public const string Claim = "Claim";
         public const string UnAuthorized = "UnAuthorized";
         public const string BadRequest = "BadRequest";
+        public const string PleaseTryToLoginAgain = "PleaseTryToLoginAgain";
         public const string UnProcessableEntity = "UnProcessableEntity";
 
         public const string FailedToAdd = "FailedToAdd";

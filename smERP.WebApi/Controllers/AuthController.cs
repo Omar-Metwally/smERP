@@ -23,6 +23,7 @@ public class AuthController : AppControllerBase
     {
         var response = await Mediator.Send(request);
         var apiResult = response.ToApiResult();
+        SetRefreshTokenInCookie(apiResult.Value.RefreshToken, apiResult.Value.RefreshTokenExpirationDate);
         return StatusCode(apiResult.StatusCode, apiResult);
     }
 
@@ -91,5 +92,19 @@ public class AuthController : AppControllerBase
         var response = await Mediator.Send(request);
         var apiResult = response.ToApiResult();
         return StatusCode(apiResult.StatusCode, apiResult);
+    }
+
+    private void SetRefreshTokenInCookie(string refreshToken, DateTime expires)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = expires.ToLocalTime(),
+            Secure = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.None
+        };
+
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 }

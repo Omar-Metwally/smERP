@@ -64,7 +64,7 @@ public class StorageLocationCommandHandler(
                 x.Quantity,
                 productInstance.IsTracked,
                 productInstance.ShelfLifeInDays,
-                (x.Units ?? Enumerable.Empty<ProductItem>()).Select(m => (m.SerialNumber, m.ExpirationDate)).ToList()
+                (x.Units ?? Enumerable.Empty<ProductItem>()).Select(m => (m.SerialNumber, "Available", m.ExpirationDate)).ToList()
             );
         }).ToList();
 
@@ -123,7 +123,7 @@ public class StorageLocationCommandHandler(
                 x.Quantity,
                 productInstance.IsTracked,
                 productInstance.ShelfLifeInDays,
-                (x.Units ?? Enumerable.Empty<ProductItem>()).Select(m => (m.SerialNumber, m.ExpirationDate)).ToList()
+                (x.Units ?? Enumerable.Empty<ProductItem>()).Select(m => (m.SerialNumber, "Available", m.ExpirationDate)).ToList()
             );
         }).ToList();
 

@@ -15,6 +15,7 @@ public class ProductInstance : Entity, IAggregateRoot
     public int QuantityInStock { get; private set; }
     public decimal BuyingPrice { get; private set; }
     public decimal SellingPrice { get; private set; }
+    public int? DefaultQuantityAlertLevel { get; private set; }
     //public int FirstUniqueAttributeId { get; private set; }
     //public int FirstUniqueAttributeValueId { get; private set; }
     public virtual Product Product { get; private set; } = null!;
@@ -154,6 +155,15 @@ public class ProductInstance : Entity, IAggregateRoot
         }
 
         return new Result<List<Image>>();
+    }
+
+    public IResultBase SetAlertLevel(int AlertLevel)
+    {
+        if (AlertLevel < 1)
+            return new Result<int>().WithBadRequest(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()));
+
+        DefaultQuantityAlertLevel = AlertLevel;
+        return new Result<int>();
     }
 
     //public IResult<ProductInstanceAttribute> AddAttribute(int attributeValueId)

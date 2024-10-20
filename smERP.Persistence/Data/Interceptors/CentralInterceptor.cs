@@ -39,7 +39,7 @@ public class CentralInterceptor : SaveChangesInterceptor
         if (context == null) return;
 
         var changeLogs = new List<ChangeLog>();
-        var userId = "1";//GetCurrentUserId(); // Implement this method to get the current user's ID
+        var userId = "1";
         var currentDateTime = DateTime.UtcNow;
 
         foreach (var entry in context.ChangeTracker.Entries())

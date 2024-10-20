@@ -184,7 +184,7 @@ public class Product : Entity, IAggregateRoot
 
         foreach (var attr in orderedAttributes)
         {
-            sku.Append($"{attr.attributeId}:{attr.attributeValueId}-");
+            sku.Append($"{attr.attributeId},{attr.attributeValueId}-");
         }
 
         if (sku.Length > 0 && sku[sku.Length - 1] == '-')

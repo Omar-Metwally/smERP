@@ -8,6 +8,7 @@ using Serilog;
 using smERP.WebApi.Middleware;
 using smERP.Infrastructure;
 using Microsoft.Extensions.FileProviders;
+using smERP.Application.Notifications;
 
 namespace smERP.WebApi;
 
@@ -36,12 +37,12 @@ public class Program
 
         builder.Services.AddControllers();
 
+        builder.Services.AddSignalR();
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddHttpContextAccessor();
-
-        builder.Services.AddAuthentication();
 
         builder.Services.AddApplicationDependencies(builder.Configuration)
                         .AddInfrastructureDependencies(builder.Configuration)
@@ -65,7 +66,7 @@ public class Program
         app.UseExceptionHandler();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        //if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
@@ -80,6 +81,8 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseSerilogRequestLogging();
+
+        app.UseAuthentication();
 
         app.UseAuthorization();
 
@@ -100,6 +103,8 @@ public class Program
             .AllowAnyHeader()
             .WithExposedHeaders("Location")
             .AllowCredentials());
+
+        app.MapHub<NotificationHub>("/notifications");
 
         app.MapControllers();
 

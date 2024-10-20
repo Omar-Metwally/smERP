@@ -21,7 +21,7 @@ public class UnitOfWork(ProductDbContext dbContext) : IUnitOfWork
         await _dbContext.Database.RollbackTransactionAsync(cancellationToken);
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await _dbContext.SaveChangesAsync(cancellationToken);
     }

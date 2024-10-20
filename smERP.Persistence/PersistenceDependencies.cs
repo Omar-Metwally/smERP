@@ -12,9 +12,9 @@ public static class PersistenceDependencies
 {
     public static IServiceCollection AddPersistenceDependencies(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<AppDbContext>(options =>
-          options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-          b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+        //services.AddDbContext<AppDbContext>(options =>
+        //  options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
+        //  b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
         services.AddDbContext<ProductDbContext>(options =>
           options.UseSqlServer(configuration.GetConnectionString("ProductConnection"),
@@ -25,7 +25,7 @@ public static class PersistenceDependencies
 
         services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
         services.AddTransient<IUnitOfWork, UnitOfWork>()
-                .AddTransient<ICompanyRepository, CompanyRepository>()
+                //.AddTransient<ICompanyRepository, CompanyRepository>()
                 .AddTransient<ICategoryRepository, CategoryRepository>()
                 .AddTransient<IBrandRepository, BrandRepository>()
                 .AddTransient<IAttributeRepository, AttributeRepository>()
@@ -35,6 +35,7 @@ public static class PersistenceDependencies
                 .AddTransient<IProcurementTransactionRepository, ProcurementTransactionRepository>()
                 .AddTransient<IStorageLocationRepository, StorageLocationRepository>()
                 .AddTransient<IFileStorageRepository, FileStorageRepository>()
+                .AddTransient<INotificationRepository, NotificationRepository>()
                 .AddSingleton(new FileStorageManager(root));
 
         return services;

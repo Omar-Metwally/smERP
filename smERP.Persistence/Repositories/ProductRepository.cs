@@ -210,4 +210,33 @@ public class ProductRepository(ProductDbContext context) : Repository<Product>(c
     {
         return await _context.Set<ProductInstance>().AnyAsync(x => x.Id == productInstanceId);
     }
+
+    public async Task<List<(int ProductInstanceId, string ProductInstanceName)>> GetProductNames(List<int> productInstanceIds)
+    {
+        return await _context.Set<ProductInstance>()
+            .AsNoTracking()
+            .Select(instance => new
+            {
+                ProductInstanceId = instance.Id,
+                ProductName = instance.Product.Name.English,
+                Attributes = instance.ProductInstanceAttributeValues.Select(x => new
+                {
+                    AttributeName = x.AttributeValue.Attribute.Name.English,
+                    AttributeValue = x.AttributeValue.Value.English
+                }).ToList()
+            })
+            .ToListAsync()
+            .ContinueWith(task =>
+            {
+                return task.Result.Select(item =>
+                {
+                    var sb = new StringBuilder(item.ProductName);
+                    foreach (var attr in item.Attributes)
+                    {
+                        sb.Append(" (").Append(attr.AttributeName).Append(": ").Append(attr.AttributeValue).Append(')');
+                    }
+                    return (item.ProductInstanceId, sb.ToString());
+                }).ToList();
+            });
+    }
 }

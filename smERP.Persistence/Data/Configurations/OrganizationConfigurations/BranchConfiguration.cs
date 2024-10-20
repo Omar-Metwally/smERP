@@ -19,5 +19,12 @@ public class BranchConfiguration : IEntityTypeConfiguration<Branch>
             name.HasIndex(n => n.Arabic).IsClustered(false);
             name.HasIndex(n => n.English).IsClustered(false);
         });
+
+        builder.OwnsMany(x => x.BranchProductInstanceAlertLevels, w =>
+        {
+            w.WithOwner().HasForeignKey(x => x.BranchId);
+            w.HasKey(x => new { x.BranchId, x.ProductInstanceId });
+            w.HasOne(x => x.ProductInstance).WithMany().HasForeignKey(x => x.ProductInstanceId);
+        });
     }
 }

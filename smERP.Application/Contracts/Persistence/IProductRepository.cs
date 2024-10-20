@@ -17,5 +17,5 @@ public interface IProductRepository : IRepository<Product>
     Task<IReadOnlyList<GetProductsQueryResponse>> GetProducts();
     Task<IEnumerable<(int ProductInstanceId, bool IsTracked, bool IsWarranted, int? ShelfLifeInDays)>> GetProductInstancesWithProduct(IEnumerable<int> productinstanceIds);
     Task<PagedResult<GetPaginatedProductsQueryResponse>> GetPagedAsync(GetPaginatedProductsQuery parameters);
-
+    Task<List<(int ProductInstanceId,string ProductInstanceName)>> GetProductNames(List<int> productInstanceIds);
 }

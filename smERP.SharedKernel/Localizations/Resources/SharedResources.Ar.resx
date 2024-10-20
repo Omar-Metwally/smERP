@@ -426,4 +426,7 @@
   <data name="FileWasNotDeletedPleaseTryAgainLater" xml:space="preserve">
     <value>حذف الملف لم يتم برجاء المحاولة لاحقا</value>
   </data>
+  <data name="PleaseTryToLoginAgain" xml:space="preserve">
+    <value>يرجي محاولة تسجيل الدخول مرة اخري</value>
+  </data>
 </root>

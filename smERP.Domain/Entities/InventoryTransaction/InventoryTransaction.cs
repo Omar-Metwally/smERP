@@ -81,16 +81,12 @@ public abstract class InventoryTransaction : Entity
         return new Result<List<InventoryTransactionItem>>(inventoryTransactionItemsList);
     }
 
-    public void RaiseTransactionCreatedEvent()
+    public void RaiseTransactionCreatedEvent(List<(int ProductIsntanceId, int EffectedQuantity, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, string Status, DateOnly? ExpirationDate)>? SerialNumbers)> productEntries)
     {
-        if (Items != null)
-        {
-            var transactionItems = Items.Select(item => (item.ProductInstanceId, item.Quantity, item.InventoryTransactionItemUnits != null && item.InventoryTransactionItemUnits.Count > 0, item.InventoryTransactionItemUnits?.Select(unit => (unit.SerialNumber, "Added")).ToList())).ToList();
-            RaiseEvent(new ProductsQuantityChangedEvent(Id, GetTransactionType(), transactionItems));
-        }
+        RaiseEvent(new ProductsQuantityChangedEvent(Id, StorageLocationId, GetTransactionType(), productEntries));
     }
 
-    public IResult<List<InventoryTransactionItem>> AddItems(List<(int ProductInstanceId, int Quantity, decimal UnitPrice, bool IsTracked, List<(string SerialNumber, DateOnly? ExpirationDate)>? Units)> items)
+    public IResult<List<InventoryTransactionItem>> AddItems(List<(int ProductInstanceId, int Quantity, decimal UnitPrice, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, DateOnly? ExpirationDate)>? Units)> items)
     {
         if (items.DistinctBy(x => x.ProductInstanceId).Count() == items.Count)
             return new Result<List<InventoryTransactionItem>>()
@@ -119,18 +115,22 @@ public abstract class InventoryTransaction : Entity
 
             Items.Add(newItemResult.Value);
         }
+        var newItems = items.Select(item => (
+            item.ProductInstanceId,
+            item.Quantity,
+            item.IsTracked,
+            item.ShelfLifeInDays,
+            item.Units?.Select(unit => (unit.SerialNumber, "Available", unit.ExpirationDate)).ToList()
+        )).ToList();
 
-        var newItems = items.Select(item => (item.ProductInstanceId, item.Quantity, item.IsTracked, item.Units?.Select(unit => (unit.SerialNumber, "Added")).ToList()))
-            .ToList();
-
-        RaiseEvent(new ProductsQuantityChangedEvent(Id, GetTransactionType(), items.Select(item => (item.ProductInstanceId, item.Quantity, item.IsTracked, item.Units?.Select(unit => (unit.SerialNumber, "Added")).ToList())).ToList()));
+        RaiseEvent(new ProductsQuantityChangedEvent(Id, StorageLocationId, GetTransactionType(), newItems));
 
         return new Result<List<InventoryTransactionItem>>();
     }
 
-    public IResult<List<InventoryTransactionItem>> UpdateItems(List<(int ProductInstanceId, int? Quantity, decimal? UnitPrice, bool IsTracked, List<(string SerialNumber, DateOnly? ExpirationDate)>? UnitsToAdd, List<string>? UnitsToRemove)> items)
+    public IResult<List<InventoryTransactionItem>> UpdateItems(List<(int ProductInstanceId, int? Quantity, decimal? UnitPrice, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, DateOnly? ExpirationDate)>? UnitsToAdd, List<string>? UnitsToRemove)> items)
     {
-        if (items.DistinctBy(x => x.ProductInstanceId).Count() == items.Count)
+        if (!(items.DistinctBy(x => x.ProductInstanceId).Count() == items.Count))
             return new Result<List<InventoryTransactionItem>>()
                 .WithBadRequestResult(SharedResourcesKeys.___ListCannotContainDuplicates.Localize(SharedResourcesKeys.Product.Localize()));
 
@@ -149,11 +149,13 @@ public abstract class InventoryTransaction : Entity
                 return updateItemResult.ChangeType(new List<InventoryTransactionItem>());
         }
 
+        DateOnly? nullDateOnly = null;
+
         var updatedItems = items.Select(item =>
         {
-            var addedUnits = item.UnitsToAdd?.Select(unitToAdd => (unitToAdd.SerialNumber, "Added")).ToList();
+            var addedUnits = item.UnitsToAdd?.Select(unitToAdd => (unitToAdd.SerialNumber, "Available", unitToAdd.ExpirationDate)).ToList();
 
-            var removedUnits = item.UnitsToRemove?.Select(unitToRemove => (unitToRemove, "Removed")).ToList();
+            var removedUnits = item.UnitsToRemove?.Select(unitToRemove => (unitToRemove, "Removed", nullDateOnly)).ToList();
 
             var combinedUnits = addedUnits?.Concat(removedUnits ?? []).ToList();
 
@@ -161,12 +163,13 @@ public abstract class InventoryTransaction : Entity
                 item.ProductInstanceId,
                 item.Quantity ?? 0,
                 item.IsTracked,
+                item.ShelfLifeInDays,
                 combinedUnits
             );
         }).ToList();
 
 
-        RaiseEvent(new ProductsQuantityChangedEvent(Id, GetTransactionType(), updatedItems));
+        RaiseEvent(new ProductsQuantityChangedEvent(Id, StorageLocationId, GetTransactionType(), updatedItems));
 
         return new Result<List<InventoryTransactionItem>>();
     }
@@ -188,15 +191,18 @@ public abstract class InventoryTransaction : Entity
             Items.Remove(item);
         }
 
-        var deletedItems = itemsToBeRemoved.Select(item => (item.ProductInstanceId, item.Quantity, item.InventoryTransactionItemUnits != null && item.InventoryTransactionItemUnits.Count > 0, item.InventoryTransactionItemUnits?.Select(unit => (unit.SerialNumber, "Removed")).ToList()))
+        int? nullInt = null;
+        DateOnly? nullDateOnly = null;
+
+        var deletedItems = itemsToBeRemoved.Select(item => (item.ProductInstanceId, item.Quantity, item.InventoryTransactionItemUnits != null && item.InventoryTransactionItemUnits.Count > 0, nullInt, item.InventoryTransactionItemUnits?.Select(unit => (unit.SerialNumber, "Removed", nullDateOnly)).ToList()))
             .ToList();
 
-        RaiseEvent(new ProductsQuantityChangedEvent(Id, GetTransactionType(), deletedItems));
+        RaiseEvent(new ProductsQuantityChangedEvent(Id, StorageLocationId, GetTransactionType(), deletedItems));
 
         return new Result<InventoryTransactionItem>();
     }
 
-    private IResult<InventoryTransactionItem> UpdateItem((int ProductInstanceId, int? Quantity, decimal? UnitPrice, bool IsTracked, List<(string SerialNumber, DateOnly? ExpirationDate)>? UnitsToAdd, List<string>? UnitsToRemove) item)
+    private IResult<InventoryTransactionItem> UpdateItem((int ProductInstanceId, int? Quantity, decimal? UnitPrice, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, DateOnly? ExpirationDate)>? UnitsToAdd, List<string>? UnitsToRemove) item)
     {
         var existingItem = Items.FirstOrDefault(x => x.ProductInstanceId == item.ProductInstanceId);
         if (existingItem == null)
@@ -228,7 +234,7 @@ public abstract class InventoryTransaction : Entity
         }
 
         if (item.Quantity != null)
-            existingItem.UpdateQuantity(item.Quantity.Value);
+            existingItem.UpdateQuantity(existingItem.Quantity + item.Quantity.Value);
 
         if (item.UnitPrice != null)
             existingItem.UpdateUnitPrice(item.UnitPrice.Value);

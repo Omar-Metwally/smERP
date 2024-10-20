@@ -25,7 +25,7 @@ public class StorageLocation : Entity, IAggregateRoot
         Name = name;
     }
 
-    public IResult<List<StoredProductInstance>> AddStoredProductInstances(List<(int ProductInstnceId, int Quantity, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, DateOnly? ExprationDate)> Items)> products)
+    public IResult<List<StoredProductInstance>> AddStoredProductInstances(List<(int ProductInstnceId, int Quantity, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, string Status, DateOnly? ExprationDate)>? Items)> products)
     {
         if (products == null || products.Count() < 0)
             return new Result<List<StoredProductInstance>>()

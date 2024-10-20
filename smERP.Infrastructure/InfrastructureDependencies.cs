@@ -11,6 +11,7 @@ using System.Text;
 using smERP.Infrastructure.Identity.Services;
 using smERP.Infrastructure.Identity.Models;
 using smERP.Application.Contracts.Infrastructure.Identity;
+using Microsoft.Extensions.Options;
 
 namespace smERP.Infrastructure;
 public static class InfrastructureDependencies
@@ -52,9 +53,37 @@ public static class InfrastructureDependencies
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"])),
                 ClockSkew = TimeSpan.Zero
             };
+
+            o.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notifications"))
+                    {
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
         });
 
+        services.AddAuthorizationBuilder()
+            .AddPolicy("AdminPolicy", policy =>
+                policy.RequireRole("Admin"))
+            .AddPolicy("BranchManagerPolicy", policy =>
+                policy.RequireRole("Branch Manager"))
+            .AddPolicy("BranchAccessPolicy", policy =>
+                policy.RequireAssertion(context =>
+                    context.User.IsInRole("Admin") ||
+                    (context.User.IsInRole("Branch Manager") &&
+                     context.User.HasClaim(c => c.Type == "branch")))); 
+
+        services.AddHttpContextAccessor();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+
 
         return services;
     }

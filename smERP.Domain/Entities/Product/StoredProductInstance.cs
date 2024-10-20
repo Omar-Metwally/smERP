@@ -2,6 +2,7 @@
 using smERP.SharedKernel.Localizations.Extensions;
 using smERP.SharedKernel.Localizations.Resources;
 using smERP.SharedKernel.Responses;
+using System.Linq;
 using System.Net;
 
 namespace smERP.Domain.Entities.Product;
@@ -25,7 +26,7 @@ public class StoredProductInstance
 
     private StoredProductInstance() { }
 
-    public static IResult<StoredProductInstance> Create(int storageLocationId, (int ProductInstanceId, int Quantity, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, DateOnly? ExpirationDate)>? Items) product)
+    public static IResult<StoredProductInstance> Create(int storageLocationId, (int ProductInstanceId, int Quantity, bool IsTracked, int? ShelfLifeInDays, List<(string SerialNumber, string Status, DateOnly? ExpirationDate)>? Items) product)
     {
         if (product.Quantity < 0)
             return new Result<StoredProductInstance>()
@@ -56,12 +57,8 @@ public class StoredProductInstance
         return CreateTrackedStoredProductInstance(storageLocationId, product.ProductInstanceId, product.Quantity, product.Items.Select(x => x.SerialNumber).ToList());
     }
 
-    public IResult<StoredProductInstance> Update(int quantity, int? shelfLifeInDays, List<(string SerialNumber, DateOnly? ExpirationDate)>? items)
+    public IResult<StoredProductInstance> Update(int quantity, int? shelfLifeInDays, List<(string SerialNumber, string Status, DateOnly? ExpirationDate)>? items)
     {
-        if (quantity < 0)
-            return new Result<StoredProductInstance>()
-                .WithError(SharedResourcesKeys.___MustBeAPositiveNumber.Localize(SharedResourcesKeys.Quantity.Localize()))
-                .WithStatusCode(HttpStatusCode.BadRequest);
 
         Quantity += quantity;
 
@@ -91,28 +88,44 @@ public class StoredProductInstance
                     .WithError(SharedResourcesKeys.EnteredExpirationDateCannotExceedProductShelfLife.Localize())
                     .WithStatusCode(HttpStatusCode.BadRequest);
 
-            productInstanceItemsToBeCreated = items.Select(item => new ProductInstanceItem(StorageLocationId, ProductInstanceId, item.SerialNumber, "Available", item.ExpirationDate ?? maxExpirationDate)).ToList();
+            productInstanceItemsToBeCreated = items.Select(item => new ProductInstanceItem(StorageLocationId, ProductInstanceId, item.SerialNumber, item.Status, item.ExpirationDate ?? maxExpirationDate)).ToList();
             Items ??= [];
             foreach (var item in productInstanceItemsToBeCreated)
             {
-                Items.Add(item);
+                var existingItem = Items.FirstOrDefault(x => x.SerialNumber == item.SerialNumber);
+                if (existingItem != null)
+                {
+                    existingItem.UpdateStatus(item.Status);
+                }
+                else
+                {
+                    Items.Add(item);
+                }
             }
 
             return new Result<StoredProductInstance>(this);
         }
 
-        productInstanceItemsToBeCreated = items.Select(item => new ProductInstanceItem(StorageLocationId, ProductInstanceId, item.SerialNumber, "Available")).ToList();
+        productInstanceItemsToBeCreated = items.Select(item => new ProductInstanceItem(StorageLocationId, ProductInstanceId, item.SerialNumber, item.Status)).ToList();
         Items ??= [];
 
         foreach (var item in productInstanceItemsToBeCreated)
         {
-            Items.Add(item);
+            var existingItem = Items.FirstOrDefault(x => x.SerialNumber == item.SerialNumber);
+            if (existingItem != null)
+            {
+                existingItem.UpdateStatus(item.Status);
+            }
+            else
+            {
+                Items.Add(item);
+            }
         }
 
         return new Result<StoredProductInstance>(this);
     }
 
-    private static IResult<StoredProductInstance> CreateTrackedStoredProductInstance(int storageLocationId, int productInstanceId, int quantity, int shelfLifeInDays, List<(string SerialNumber, DateOnly? ExpirationDate)> items)
+    private static IResult<StoredProductInstance> CreateTrackedStoredProductInstance(int storageLocationId, int productInstanceId, int quantity, int shelfLifeInDays, List<(string SerialNumber, string Status, DateOnly? ExpirationDate)> items)
     {
         var maxExpirationDate = DateOnly.FromDateTime(DateTime.Now).AddDays(shelfLifeInDays);
 
@@ -121,7 +134,7 @@ public class StoredProductInstance
                 .WithError(SharedResourcesKeys.EnteredExpirationDateCannotExceedProductShelfLife.Localize())
                 .WithStatusCode(HttpStatusCode.BadRequest);
 
-        var productInstanceItemsToBeCreated = items.Select(item => new ProductInstanceItem(storageLocationId, productInstanceId, item.SerialNumber, "Available", item.ExpirationDate ?? maxExpirationDate)).ToList();
+        var productInstanceItemsToBeCreated = items.Select(item => new ProductInstanceItem(storageLocationId, productInstanceId, item.SerialNumber, item.Status, item.ExpirationDate ?? maxExpirationDate)).ToList();
 
         return new Result<StoredProductInstance>(new StoredProductInstance(storageLocationId, productInstanceId, quantity, productInstanceItemsToBeCreated));
     }
